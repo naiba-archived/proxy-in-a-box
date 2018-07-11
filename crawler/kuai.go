@@ -4,42 +4,40 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/naiba/com"
-
 	"github.com/PuerkitoBio/goquery"
+	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
 	"github.com/parnurzeal/gorequest"
 )
 
-//Xici 西祠代理
-type Xici struct {
+//Kuai 快代理
+type Kuai struct {
 	urls       []string
 	currURL    int
 	currPageNo int
 	ended      bool
 }
 
-//NewXici 新建一个西祠代理对象
-func NewXici() *Xici {
-	this := new(Xici)
+//NewKuai 新建对象
+func NewKuai() *Kuai {
+	this := new(Kuai)
 	this.urls = []string{
-		"http://www.xicidaili.com/nn/",
-		"http://www.xicidaili.com/nt/",
+		"https://www.kuaidaili.com/free/inha/",
+		"https://www.kuaidaili.com/free/intr/",
 	}
 	this.currPageNo = 1
 	return this
 }
 
-//Get 获取一页代理，会自动翻页、换类型
-func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
-
+//Get 获取代理
+func (k *Kuai) Get() (list []proxyinabox.Proxy, err error) {
 	// 已遍历完毕
-	if xc.ended {
+	if k.ended {
 		return
 	}
 
 	request := gorequest.New()
-	_, body, errs := request.Get(xc.urls[xc.currURL]+strconv.Itoa(xc.currPageNo)).
+	_, body, errs := request.Get(k.urls[k.currURL]+strconv.Itoa(k.currPageNo)).
 		Set("User-Agent", com.RandomUserAgent()).
 		End()
 	if len(errs) > 0 {
@@ -54,8 +52,7 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 	}
 
 	list = make([]proxyinabox.Proxy, 0)
-
-	ipList := doc.Find("table#ip_list").First()
+	ipList := doc.Find("div#list table").First()
 	ipList.Find("tr").Each(func(i int, tr *goquery.Selection) {
 
 		if i == 0 {
@@ -64,13 +61,13 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 
 		var p proxyinabox.Proxy
 		tr.Children().EachWithBreak(func(j int, td *goquery.Selection) bool {
-			if j > 2 {
+			if j > 1 {
 				return false
 			}
 			switch j {
-			case 1:
+			case 0:
 				p.IP = td.Text()
-			case 2:
+			case 1:
 				p.Port = td.Text()
 			}
 			return true
@@ -79,24 +76,33 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 		content := tr.Text()
 		p.IsAnonymous = strings.Contains(content, "高匿")
 		p.IsHTTPS = strings.Contains(content, "HTTPS")
-		p.IsSocks45 = strings.Contains(content, "socks4/5")
 
 		list = append(list, p)
 	})
 
-	xc.currPageNo++
-
-	nextPage := doc.Find("span.next_page").First()
-	// 如果当前类型代理遍历完毕
-	if nextPage.HasClass("disabled") {
-		xc.currPageNo = 1
-		xc.currURL++
-
-		// 如果所有类型代理遍历完毕
-		if xc.currURL == len(xc.urls) {
-			xc.ended = true
-			xc.currURL = 0
+	flag := false
+	nav := doc.Find("div#listnav").First()
+	nav.Find("li").EachWithBreak(func(i int, li *goquery.Selection) bool {
+		if strings.TrimSpace(li.Text()) == strconv.Itoa(k.currPageNo) {
+			flag = true
+			return true
 		}
-	}
+		if flag {
+			k.currPageNo++
+
+			// 如果当前类型代理遍历完毕
+			if strings.TrimSpace(li.Text()) == "页" {
+				k.currPageNo = 1
+				k.currURL++
+				// 如果所有类型代理遍历完毕
+				if k.currURL == len(k.urls) {
+					k.ended = true
+					k.currURL = 0
+				}
+			}
+			return false
+		}
+		return true
+	})
 	return
 }

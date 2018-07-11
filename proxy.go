@@ -9,9 +9,10 @@ type Proxy struct {
 	IsAnonymous bool
 	IsHTTPS     bool
 	IsSocks45   bool
+	Delay       int
 }
 
 //ProxyCrawler 代理抓取工具
 type ProxyCrawler interface {
-	GetPage() (list []Proxy, err error)
+	Get() (list []Proxy, err error)
 }
