@@ -1,0 +1,1 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/naiba/com)](https://goreportcard.com/report/github.com/naiba/com)  [![build status](https://travis-ci.com/naiba/com.svg?branch=master)](https://travis-ci.com/naiba/com)
