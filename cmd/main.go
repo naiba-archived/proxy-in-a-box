@@ -12,6 +12,6 @@ func main() {
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
 	var c proxyinabox.ProxyCrawler
-	c = crawler.NewXiciDaili()
+	c = crawler.NewXici()
 	fmt.Println(c.GetPage())
 }

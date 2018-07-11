@@ -11,29 +11,27 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-//XiciDaili 西祠代理
-type XiciDaili struct {
+//Xici 西祠代理
+type Xici struct {
 	urls       []string
 	currURL    int
 	currPageNo int
 	ended      bool
 }
 
-//NewXiciDaili 新建一个西祠代理对象
-func NewXiciDaili() *XiciDaili {
-	this := new(XiciDaili)
+//NewXici 新建一个西祠代理对象
+func NewXici() *Xici {
+	this := new(Xici)
 	this.urls = []string{
 		"http://www.xicidaili.com/nn/",
 		"http://www.xicidaili.com/nt/",
-		"http://www.xicidaili.com/wt/",
-		"http://www.xicidaili.com/wn/",
 	}
 	this.currPageNo = 1
 	return this
 }
 
 //GetPage 获取一页代理，会自动翻页、换类型
-func (xc *XiciDaili) GetPage() (list []proxyinabox.Proxy, err error) {
+func (xc *Xici) GetPage() (list []proxyinabox.Proxy, err error) {
 
 	// 已遍历完毕
 	if xc.ended {
