@@ -16,6 +16,7 @@ type Kuai struct {
 	currURL    int
 	currPageNo int
 	ended      bool
+	req        *gorequest.SuperAgent
 }
 
 //NewKuai 新建对象
@@ -26,6 +27,7 @@ func NewKuai() *Kuai {
 		"https://www.kuaidaili.com/free/intr/",
 	}
 	this.currPageNo = 1
+	this.req = gorequest.New()
 	return this
 }
 
@@ -36,8 +38,7 @@ func (k *Kuai) Get() (list []proxyinabox.Proxy, err error) {
 		return
 	}
 
-	request := gorequest.New()
-	_, body, errs := request.Get(k.urls[k.currURL]+strconv.Itoa(k.currPageNo)).
+	_, body, errs := k.req.Get(k.urls[k.currURL]+strconv.Itoa(k.currPageNo)).
 		Set("User-Agent", com.RandomUserAgent()).
 		End()
 	if len(errs) > 0 {

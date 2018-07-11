@@ -17,6 +17,7 @@ type Xici struct {
 	currURL    int
 	currPageNo int
 	ended      bool
+	req        *gorequest.SuperAgent
 }
 
 //NewXici 新建一个西祠代理对象
@@ -27,6 +28,7 @@ func NewXici() *Xici {
 		"http://www.xicidaili.com/nt/",
 	}
 	this.currPageNo = 1
+	this.req = gorequest.New()
 	return this
 }
 
@@ -38,8 +40,7 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 		return
 	}
 
-	request := gorequest.New()
-	_, body, errs := request.Get(xc.urls[xc.currURL]+strconv.Itoa(xc.currPageNo)).
+	_, body, errs := xc.req.Get(xc.urls[xc.currURL]+strconv.Itoa(xc.currPageNo)).
 		Set("User-Agent", com.RandomUserAgent()).
 		End()
 	if len(errs) > 0 {
