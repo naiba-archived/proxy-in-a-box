@@ -8,9 +8,10 @@ type Proxy struct {
 	Provence    string
 	IsAnonymous bool
 	IsHTTPS     bool
+	IsSocks45   bool
 }
 
 //ProxyCrawler 代理抓取工具
 type ProxyCrawler interface {
-	GetPage(pageNo int) (list []Proxy, nextPage int, err error)
+	GetPage(pageNo int) (list []Proxy, nextPageNo int, err error)
 }
