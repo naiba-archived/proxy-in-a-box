@@ -13,5 +13,5 @@ type Proxy struct {
 
 //ProxyCrawler 代理抓取工具
 type ProxyCrawler interface {
-	GetPage(pageNo int) (list []Proxy, nextPageNo int, err error)
+	GetPage() (list []Proxy, err error)
 }

@@ -13,5 +13,5 @@ func main() {
 
 	var c proxyinabox.ProxyCrawler
 	c = crawler.NewXiciDaili()
-	fmt.Println(c.GetPage(0))
+	fmt.Println(c.GetPage())
 }
