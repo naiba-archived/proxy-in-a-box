@@ -16,6 +16,7 @@ import (
 
 var validateJobs chan proxyinabox.Proxy
 var pendingValidate sync.Map
+var proxyServiceInstance proxyinabox.ProxyService
 
 type validateJSON struct {
 	IP       string
@@ -27,6 +28,11 @@ type validateJSON struct {
 		Longitude   string
 		Province    string
 	}
+}
+
+//SetProxyServiceInstance set proxy service instance
+func SetProxyServiceInstance(ps proxyinabox.ProxyService) {
+	proxyServiceInstance = ps
 }
 
 func init() {
@@ -65,7 +71,8 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		}
 		// 是否正在处理
 		_, has := pendingValidate.Load(proxy)
-		if !has {
+		_, err := proxyServiceInstance.GetByIP(p.IP)
+		if !has && err == nil {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
 			var ipip string
@@ -83,6 +90,8 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.Delay = time.Now().Unix() - start
 
 				fmt.Println("worker", id, "find a avaliable proxy", proxy)
+
+				proxyServiceInstance.Save(p)
 			}
 			pendingValidate.Delete(proxy)
 		}

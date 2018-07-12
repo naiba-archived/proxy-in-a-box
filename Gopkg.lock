@@ -14,6 +14,27 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/jinzhu/gorm"
+  packages = [
+    ".",
+    "dialects/sqlite"
+  ]
+  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
+  version = "v1.9.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/jinzhu/inflection"
+  packages = ["."]
+  revision = "04140366298a54a039076d798123ffa108fff46c"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/moul/http2curl"
   packages = ["."]
@@ -78,6 +99,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc4c2b541f6cb83f33cce671516c029d1261e823cfcee5363c40c1ff48ca0c7a"
+  inputs-digest = "b68858e272877f98da43388c4466787bd8425ec499a8da74ccd7e39fb2e0d29c"
   solver-name = "gps-cdcl"
   solver-version = 1

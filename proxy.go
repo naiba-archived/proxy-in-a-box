@@ -1,18 +1,29 @@
 package proxyinabox
 
-//Proxy 代理
+import (
+	"github.com/jinzhu/gorm"
+)
+
+//Proxy proxy model
 type Proxy struct {
-	IP          string
-	Port        string
-	Country     string
-	Provence    string
+	gorm.Model
+	IP          string `gorm:"type:varchar(15);unique_index"`
+	Port        string `gorm:"type:varchar(5)"`
+	Country     string `gorm:"type:varchar(15)"`
+	Provence    string `gorm:"type:varchar(15)"`
 	IsAnonymous bool
 	IsHTTPS     bool
 	IsSocks45   bool
 	Delay       int64
 }
 
-//ProxyCrawler 代理抓取工具
+//ProxyCrawler proxy crawler
 type ProxyCrawler interface {
 	Get() error
+}
+
+//ProxyService proxy service
+type ProxyService interface {
+	GetByIP(ip string) (Proxy, error)
+	Save(p Proxy) error
 }
