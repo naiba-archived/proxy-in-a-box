@@ -2,7 +2,10 @@ package crawler
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/naiba/proxyinabox"
 
@@ -12,11 +15,22 @@ import (
 )
 
 var validateJobs chan proxyinabox.Proxy
+var pendingValidate sync.Map
+
+type validateJSON struct {
+	IP       string
+	Location struct {
+		City        string
+		CountryCode string `json:"country_code"`
+		CountryName string `json:"country_name"`
+		Latitude    string
+		Longitude   string
+		Province    string
+	}
+}
 
 func init() {
-	if validateJobs == nil {
-		validateJobs = make(chan proxyinabox.Proxy, 100)
-	}
+	validateJobs = make(chan proxyinabox.Proxy, 100)
 	//start worker
 	for i := 1; i <= proxyinabox.ProxyValidatorWorkerNum; i++ {
 		go validator(i, validateJobs)
@@ -43,6 +57,34 @@ func getDocFromURL(req *gorequest.SuperAgent, url string) (*goquery.Document, er
 
 func validator(id int, validateJobs chan proxyinabox.Proxy) {
 	for p := range validateJobs {
-		fmt.Println("worker", id, p)
+		var proxy string
+		if p.IsSocks45 {
+			proxy = "socks5://" + p.IP + ":" + p.Port
+		} else {
+			proxy = "http://" + p.IP + ":" + p.Port
+		}
+		// 是否正在处理
+		_, has := pendingValidate.Load(proxy)
+		if !has {
+			pendingValidate.Store(proxy, nil)
+			var resp validateJSON
+			var ipip string
+
+			if p.IsSocks45 || p.IsHTTPS {
+				ipip = "https://api.ip.la/cn?json"
+			} else {
+				ipip = "http://api.ip.la/cn?json"
+			}
+			start := time.Now().Unix()
+			_, _, errs := gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get(ipip).EndStruct(&resp)
+			if len(errs) == 0 && resp.IP == p.IP {
+				p.Country = resp.Location.CountryName
+				p.Provence = resp.Location.Province
+				p.Delay = time.Now().Unix() - start
+
+				fmt.Println("worker", id, "find a avaliable proxy", proxy)
+			}
+			pendingValidate.Delete(proxy)
+		}
 	}
 }

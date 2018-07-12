@@ -9,7 +9,7 @@ type Proxy struct {
 	IsAnonymous bool
 	IsHTTPS     bool
 	IsSocks45   bool
-	Delay       int
+	Delay       int64
 }
 
 //ProxyCrawler 代理抓取工具

@@ -17,7 +17,7 @@ func main() {
 		crawler.NewXici(),
 	}
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 4; i++ {
 		for _, c := range cs {
 			c.Get()
 			time.Sleep(time.Second * 2)
