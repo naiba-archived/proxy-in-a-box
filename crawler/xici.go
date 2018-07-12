@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/naiba/com"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/naiba/proxyinabox"
 	"github.com/parnurzeal/gorequest"
@@ -33,28 +31,17 @@ func NewXici() *Xici {
 }
 
 //Get 获取一页代理，会自动翻页、换类型
-func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
+func (xc *Xici) Get() error {
 
 	// 已遍历完毕
 	if xc.ended {
-		return
+		return nil
 	}
 
-	_, body, errs := xc.req.Get(xc.urls[xc.currURL]+strconv.Itoa(xc.currPageNo)).
-		Set("User-Agent", com.RandomUserAgent()).
-		End()
-	if len(errs) > 0 {
-		err = errs[0]
-		return
-	}
-
-	var doc *goquery.Document
-	doc, err = goquery.NewDocumentFromReader(strings.NewReader(body))
+	doc, err := getDocFromURL(xc.req, xc.urls[xc.currURL]+strconv.Itoa(xc.currPageNo))
 	if err != nil {
-		return
+		return err
 	}
-
-	list = make([]proxyinabox.Proxy, 0)
 
 	ipList := doc.Find("table#ip_list").First()
 	ipList.Find("tr").Each(func(i int, tr *goquery.Selection) {
@@ -82,7 +69,7 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 		p.IsHTTPS = strings.Contains(content, "HTTPS")
 		p.IsSocks45 = strings.Contains(content, "socks4/5")
 
-		list = append(list, p)
+		validateJobs <- p
 	})
 
 	xc.currPageNo++
@@ -99,5 +86,5 @@ func (xc *Xici) Get() (list []proxyinabox.Proxy, err error) {
 			xc.currURL = 0
 		}
 	}
-	return
+	return nil
 }

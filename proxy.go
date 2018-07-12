@@ -14,5 +14,5 @@ type Proxy struct {
 
 //ProxyCrawler 代理抓取工具
 type ProxyCrawler interface {
-	Get() (list []Proxy, err error)
+	Get() error
 }

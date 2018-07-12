@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
 	"github.com/parnurzeal/gorequest"
 )
@@ -32,27 +31,17 @@ func NewKuai() *Kuai {
 }
 
 //Get 获取代理
-func (k *Kuai) Get() (list []proxyinabox.Proxy, err error) {
+func (k *Kuai) Get() error {
 	// 已遍历完毕
 	if k.ended {
-		return
+		return nil
 	}
 
-	_, body, errs := k.req.Get(k.urls[k.currURL]+strconv.Itoa(k.currPageNo)).
-		Set("User-Agent", com.RandomUserAgent()).
-		End()
-	if len(errs) > 0 {
-		err = errs[0]
-		return
-	}
-
-	var doc *goquery.Document
-	doc, err = goquery.NewDocumentFromReader(strings.NewReader(body))
+	doc, err := getDocFromURL(k.req, k.urls[k.currURL]+strconv.Itoa(k.currPageNo))
 	if err != nil {
-		return
+		return err
 	}
 
-	list = make([]proxyinabox.Proxy, 0)
 	ipList := doc.Find("div#list table").First()
 	ipList.Find("tr").Each(func(i int, tr *goquery.Selection) {
 
@@ -78,7 +67,7 @@ func (k *Kuai) Get() (list []proxyinabox.Proxy, err error) {
 		p.IsAnonymous = strings.Contains(content, "高匿")
 		p.IsHTTPS = strings.Contains(content, "HTTPS")
 
-		list = append(list, p)
+		validateJobs <- p
 	})
 
 	flag := false
@@ -105,5 +94,5 @@ func (k *Kuai) Get() (list []proxyinabox.Proxy, err error) {
 		}
 		return true
 	})
-	return
+	return nil
 }
