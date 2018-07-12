@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/naiba/proxyinabox"
@@ -63,12 +62,6 @@ func (xc *Xici) Get() error {
 			}
 			return true
 		})
-
-		content := tr.Text()
-		p.IsAnonymous = strings.Contains(content, "高匿")
-		p.IsHTTPS = strings.Contains(content, "HTTPS")
-		p.IsSocks45 = strings.Contains(content, "socks4/5")
-
 		validateJobs <- p
 	})
 

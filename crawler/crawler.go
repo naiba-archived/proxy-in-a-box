@@ -66,37 +66,29 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		// format
 		p.IP = strings.TrimSpace(p.IP)
 		var proxy string
-		if p.IsSocks45 {
-			proxy = "socks5://" + p.IP + ":" + p.Port
-		} else {
-			proxy = "http://" + p.IP + ":" + p.Port
-		}
-
+		proxy = "http://" + p.IP + ":" + p.Port
 		fmt.Println("worker", id, "process", proxy)
-
 		// 是否正在处理
 		_, has := pendingValidate.Load(proxy)
 		_, err := proxyServiceInstance.GetByIP(p.IP)
 		if !has && err != nil {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
-			var ipip string
-
-			if p.IsSocks45 || p.IsHTTPS {
-				ipip = "https://api.ip.la/cn?json"
-			} else {
-				ipip = "http://api.ip.la/cn?json"
-			}
 			start := time.Now().Unix()
-			_, _, errs := gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get(ipip).EndStruct(&resp)
+			// detect HTTP or HTTPS
+			_, _, errs := gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("https://api.ip.la/cn?json").EndStruct(&resp)
+			if len(errs) != 0 || resp.IP != p.IP {
+				start = time.Now().Unix()
+				_, _, errs = gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
+				p.NotHTTPS = true
+			}
 			if len(errs) == 0 && resp.IP == p.IP {
 				p.Country = resp.Location.CountryName
 				p.Provence = resp.Location.Province
 				p.Delay = time.Now().Unix() - start
 
-				fmt.Println("worker", id, "find a avaliable proxy", proxy)
-
 				proxyServiceInstance.Save(&p)
+				fmt.Println("worker", id, "find a avaliable proxy", p)
 			}
 			pendingValidate.Delete(proxy)
 		}

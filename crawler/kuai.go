@@ -62,11 +62,6 @@ func (k *Kuai) Get() error {
 			}
 			return true
 		})
-
-		content := tr.Text()
-		p.IsAnonymous = strings.Contains(content, "高匿")
-		p.IsHTTPS = strings.Contains(content, "HTTPS")
-
 		validateJobs <- p
 	})
 
