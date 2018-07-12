@@ -69,6 +69,9 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		} else {
 			proxy = "http://" + p.IP + ":" + p.Port
 		}
+
+		fmt.Println("worker", id, "process", proxy)
+
 		// 是否正在处理
 		_, has := pendingValidate.Load(proxy)
 		_, err := proxyServiceInstance.GetByIP(p.IP)
