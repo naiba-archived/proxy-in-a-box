@@ -63,6 +63,8 @@ func getDocFromURL(req *gorequest.SuperAgent, url string) (*goquery.Document, er
 
 func validator(id int, validateJobs chan proxyinabox.Proxy) {
 	for p := range validateJobs {
+		// format
+		p.IP = strings.TrimSpace(p.IP)
 		var proxy string
 		if p.IsSocks45 {
 			proxy = "socks5://" + p.IP + ":" + p.Port
