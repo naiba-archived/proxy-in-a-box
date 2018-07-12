@@ -18,10 +18,9 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	defer db.Close()
 	db.AutoMigrate(&proxyinabox.Proxy{})
 
-	ps = sqlite3.ProxyService{db: db}
+	ps = &sqlite3.ProxyService{DB: db}
 	crawler.SetProxyServiceInstance(ps)
 }
 

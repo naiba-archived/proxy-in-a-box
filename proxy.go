@@ -25,5 +25,5 @@ type ProxyCrawler interface {
 //ProxyService proxy service
 type ProxyService interface {
 	GetByIP(ip string) (Proxy, error)
-	Save(p Proxy) error
+	Save(p *Proxy) error
 }

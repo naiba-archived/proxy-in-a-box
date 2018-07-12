@@ -72,7 +72,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		// 是否正在处理
 		_, has := pendingValidate.Load(proxy)
 		_, err := proxyServiceInstance.GetByIP(p.IP)
-		if !has && err == nil {
+		if !has && err != nil {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
 			var ipip string
@@ -91,7 +91,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 
 				fmt.Println("worker", id, "find a avaliable proxy", proxy)
 
-				proxyServiceInstance.Save(p)
+				proxyServiceInstance.Save(&p)
 			}
 			pendingValidate.Delete(proxy)
 		}
