@@ -27,11 +27,11 @@ func init() {
 func main() {
 	fmt.Println("AppName:", proxyinabox.AppName)
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
-	fmt.Println("ServerIP:", proxyinabox.ServerIP)
 
 	cs := []proxyinabox.ProxyCrawler{
 		crawler.NewKuai(),
 		crawler.NewXici(),
+		crawler.New66IP(),
 	}
 
 	for i := 0; i < 100; i++ {
