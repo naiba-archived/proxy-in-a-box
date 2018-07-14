@@ -14,7 +14,7 @@ import (
 var ps proxyinabox.ProxyService
 
 func init() {
-	db, err := gorm.Open("sqlite3", "box.db")
+	db, err := gorm.Open("sqlite3", "file:box.db?cache=shared&mode=memory&_loc=Asia/Shanghai")
 	if err != nil {
 		panic("failed to connect database")
 	}
