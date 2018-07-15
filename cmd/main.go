@@ -14,6 +14,7 @@ import (
 var ps proxyinabox.ProxyService
 
 func init() {
+	// in-memory db
 	db, err := gorm.Open("sqlite3", "file:box.db?cache=shared&mode=memory&_loc=Asia/Shanghai")
 	if err != nil {
 		panic("failed to connect database")
@@ -28,6 +29,7 @@ func main() {
 	fmt.Println("AppName:", proxyinabox.AppName)
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
+	// TODO: one trigger crawl all pages
 	cs := []proxyinabox.ProxyCrawler{
 		crawler.NewKuai(),
 		crawler.NewXici(),
