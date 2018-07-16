@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -36,6 +37,7 @@ func (k *Kuai) Get() error {
 
 			doc, err := getDocFromURL(pageURL + strconv.Itoa(currPageNo))
 			if err != nil {
+				fmt.Println("Kuai ERROR!!", err.Error())
 				return err
 			}
 

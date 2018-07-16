@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -36,11 +35,8 @@ func main() {
 		crawler.New66IP(),
 	}
 
-	for i := 0; i < 100; i++ {
-		for _, c := range cs {
-			c.Get()
-			time.Sleep(time.Second * 2)
-		}
+	for _, c := range cs {
+		go c.Get()
 	}
 
 	select {}

@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -33,6 +34,7 @@ func (xc *Xici) Get() error {
 		for !ended {
 			doc, err := getDocFromURL(pageURL + strconv.Itoa(currPageNo))
 			if err != nil {
+				fmt.Println("XICI ERROR!!", err.Error())
 				return err
 			}
 

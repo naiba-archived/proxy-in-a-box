@@ -32,6 +32,7 @@ func (p *P66IP) Get() error {
 		for i := 0; i < 10; i++ {
 			resp, err := http.Get(pageURL)
 			if err != nil {
+				fmt.Println("66IP ERROR!!", err.Error())
 				return err
 			}
 			body, err := ioutil.ReadAll(resp.Body)
@@ -39,7 +40,6 @@ func (p *P66IP) Get() error {
 			lines := strings.Split(string(body), "<br />")
 			for _, line := range lines {
 				ipinfo := strings.Split(strings.TrimSpace(line), ":")
-				fmt.Println(ipinfo)
 				if len(ipinfo) == 2 && com.IsIPv4(ipinfo[0]) {
 					var p proxyinabox.Proxy
 					p.IP = ipinfo[0]
