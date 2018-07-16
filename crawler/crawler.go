@@ -43,9 +43,9 @@ func init() {
 	}
 }
 
-func getDocFromURL(req *gorequest.SuperAgent, url string) (*goquery.Document, error) {
+func getDocFromURL(url string) (*goquery.Document, error) {
 
-	_, body, errs := req.Get(url).
+	_, body, errs := gorequest.New().Get(url).
 		Set("User-Agent", com.RandomUserAgent()).
 		End()
 	if len(errs) > 0 {
