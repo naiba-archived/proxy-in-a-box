@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/naiba/proxyinabox"
 	"github.com/naiba/proxyinabox/proxy"
 )

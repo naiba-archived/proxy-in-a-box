@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	// sqlite driver for GORM
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 //AppName app's name
