@@ -18,7 +18,7 @@ type Proxy struct {
 }
 
 func (p Proxy) String() string {
-	return fmt.Sprintf("[%s:%s country:%s provence:%s HTTPS:%t delay:%d]",
+	return fmt.Sprintf("[√]proxy-print#[%s:%s country:%s provence:%s HTTPS:%t delay:%d]",
 		p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay)
 }
 
