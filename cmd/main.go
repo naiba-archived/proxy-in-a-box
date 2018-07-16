@@ -5,7 +5,6 @@ import (
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/naiba/proxyinabox"
-	"github.com/naiba/proxyinabox/crawler"
 	"github.com/naiba/proxyinabox/proxy"
 )
 
@@ -13,7 +12,7 @@ func main() {
 	fmt.Println("AppName:", proxyinabox.AppName)
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
-	crawler.FetchProxies()
+	//crawler.FetchProxies()
 
 	proxy.Serv("8080", "8081")
 
