@@ -17,6 +17,7 @@ func init() {
 	// in-memory db
 	db, err := gorm.Open("sqlite3", "file:box.db?cache=shared&mode=memory&_loc=Asia/Shanghai")
 	if err != nil {
+		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
 	}
 	db.AutoMigrate(&proxyinabox.Proxy{})
