@@ -7,7 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/naiba/proxyinabox"
+	"github.com/naiba/proxyinabox/service/sqlite3"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/naiba/com"
@@ -28,11 +30,6 @@ type validateJSON struct {
 		Longitude   string
 		Province    string
 	}
-}
-
-//SetProxyServiceInstance set proxy service instance
-func SetProxyServiceInstance(ps proxyinabox.ProxyService) {
-	proxyServiceInstance = ps
 }
 
 func init() {
@@ -59,6 +56,28 @@ func getDocFromURL(url string) (*goquery.Document, error) {
 
 	return doc, nil
 
+}
+
+//FetchProxies fetch new proxies
+func FetchProxies() {
+	// in-memory db
+	db, err := gorm.Open("sqlite3", "file:box.db?cache=shared&mode=memory&_loc=Asia/Shanghai")
+	if err != nil {
+		fmt.Println("DB!!!", err.Error())
+		panic("failed to connect database")
+	}
+	db.AutoMigrate(&proxyinabox.Proxy{})
+	proxyServiceInstance = &sqlite3.ProxyService{DB: db}
+
+	cs := []proxyinabox.ProxyCrawler{
+		newKuai(),
+		newXici(),
+		new66IP(),
+	}
+
+	for _, c := range cs {
+		go c.Fetch()
+	}
 }
 
 func validator(id int, validateJobs chan proxyinabox.Proxy) {

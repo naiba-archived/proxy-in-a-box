@@ -14,8 +14,7 @@ type Xici struct {
 	urls []string
 }
 
-//NewXici 新建一个西祠代理对象
-func NewXici() *Xici {
+func newXici() *Xici {
 	this := new(Xici)
 	this.urls = []string{
 		"http://www.xicidaili.com/nn/",
@@ -24,8 +23,8 @@ func NewXici() *Xici {
 	return this
 }
 
-//Get 获取一页代理，会自动翻页、换类型
-func (xc *Xici) Get() error {
+//Fetch fetch all proxies
+func (xc *Xici) Fetch() error {
 
 	currPageNo := 1
 	var ended bool

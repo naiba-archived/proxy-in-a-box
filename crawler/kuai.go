@@ -15,8 +15,7 @@ type Kuai struct {
 	urls []string
 }
 
-//NewKuai 新建对象
-func NewKuai() *Kuai {
+func newKuai() *Kuai {
 	this := new(Kuai)
 	this.urls = []string{
 		"https://www.kuaidaili.com/free/inha/",
@@ -25,8 +24,8 @@ func NewKuai() *Kuai {
 	return this
 }
 
-//Get 获取代理
-func (k *Kuai) Get() error {
+//Fetch fetch all proxies
+func (k *Kuai) Fetch() error {
 
 	var currPageNo = 1
 	var ended bool

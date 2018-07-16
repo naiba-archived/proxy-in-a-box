@@ -16,8 +16,7 @@ type P66IP struct {
 	urls []string
 }
 
-//New66IP new 66ip
-func New66IP() *P66IP {
+func new66IP() *P66IP {
 	this := new(P66IP)
 	this.urls = []string{
 		"http://www.66ip.cn/mo.php?tqsl=1000",
@@ -26,8 +25,8 @@ func New66IP() *P66IP {
 	return this
 }
 
-//Get get proxies
-func (p *P66IP) Get() error {
+//Fetch fetch all proxies
+func (p *P66IP) Fetch() error {
 	for _, pageURL := range p.urls {
 		for i := 0; i < 10; i++ {
 			resp, err := http.Get(pageURL)

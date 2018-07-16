@@ -24,7 +24,7 @@ func (p Proxy) String() string {
 
 //ProxyCrawler proxy crawler
 type ProxyCrawler interface {
-	Get() error
+	Fetch() error
 }
 
 //ProxyService proxy service
