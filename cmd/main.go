@@ -7,6 +7,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/naiba/proxyinabox"
 	"github.com/naiba/proxyinabox/crawler"
+	"github.com/naiba/proxyinabox/proxy"
 	"github.com/naiba/proxyinabox/service/sqlite3"
 )
 
@@ -36,8 +37,11 @@ func main() {
 	}
 
 	for _, c := range cs {
-		go c.Get()
+		//go c.Get()
+		fmt.Println(c)
 	}
+
+	proxy.Serv("8080")
 
 	select {}
 }

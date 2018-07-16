@@ -14,6 +14,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/elazarl/goproxy"
+  packages = ["."]
+  revision = "0a5b8bdb09049ae4ae68e75437ded0b7a2e324e3"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
@@ -99,6 +105,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b68858e272877f98da43388c4466787bd8425ec499a8da74ccd7e39fb2e0d29c"
+  inputs-digest = "02ad3a7581c32129a9959e1cebcb2854c30581fcf807906060ad77acc63a0285"
   solver-name = "gps-cdcl"
   solver-version = 1
