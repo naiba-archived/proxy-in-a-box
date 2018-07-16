@@ -29,7 +29,7 @@ func CheckIPDomain(ip, domain string) bool {
 		if had {
 			return true
 		}
-		if len(domains.list) < DomainsPerIPHalfHour {
+		if len(domains.list) < DomainsPerIPHalfAnHour {
 			domains.list[domain] = struct{}{}
 			return true
 		}

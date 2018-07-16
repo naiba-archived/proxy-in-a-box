@@ -17,8 +17,8 @@ const AppVersion = "1.0"
 //ProxyValidatorWorkerNum verify proxy's worker num
 const ProxyValidatorWorkerNum = 20
 
-//DomainsPerIPHalfHour domains num per ip on half hour
-const DomainsPerIPHalfHour = 10
+//DomainsPerIPHalfAnHour domains num per ip on half hour
+const DomainsPerIPHalfAnHour = 10
 
 //DB instance
 var DB *gorm.DB
