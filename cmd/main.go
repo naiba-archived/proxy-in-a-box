@@ -29,7 +29,6 @@ func main() {
 	fmt.Println("AppName:", proxyinabox.AppName)
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
-	// TODO: one trigger crawl all pages
 	cs := []proxyinabox.ProxyCrawler{
 		crawler.NewKuai(),
 		crawler.NewXici(),
@@ -41,7 +40,7 @@ func main() {
 		fmt.Println(c)
 	}
 
-	proxy.Serv("8080")
+	proxy.Serv("8080", "8081")
 
 	select {}
 }
