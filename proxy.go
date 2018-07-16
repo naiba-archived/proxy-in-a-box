@@ -15,6 +15,8 @@ type Proxy struct {
 	Provence string `gorm:"type:varchar(15)"`
 	NotHTTPS bool
 	Delay    int64
+
+	Activitys []Activity
 }
 
 func (p Proxy) String() string {

@@ -7,5 +7,7 @@ import (
 //Domain proxy request's domain
 type Domain struct {
 	gorm.Model
-	Name string
+	Name string `gorm:"unique_index"`
+
+	Activitys []Activity
 }
