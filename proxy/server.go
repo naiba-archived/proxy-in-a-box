@@ -14,8 +14,8 @@ func Serv(httpPort, httpsPort string) {
 	httpServer := newServer(httpPort)
 	go httpServer.ListenAndServe()
 
-	var pemPath = "../tls_keys/server.pem"
-	var keyPath = "../tls_keys/server.key"
+	var pemPath = "./server.pem"
+	var keyPath = "./server.key"
 	httpsServer := newServer(httpsPort)
 	go httpsServer.ListenAndServeTLS(pemPath, keyPath)
 }
