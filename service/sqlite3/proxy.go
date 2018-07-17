@@ -18,6 +18,6 @@ func (ps *ProxyService) GetByIP(ip string) (proxyinabox.Proxy, error) {
 
 //GetFree get a free proxy
 func (ps *ProxyService) GetFree(notIn []uint) (p proxyinabox.Proxy, e error) {
-	e = ps.DB.Not(notIn).Order("usenum ASC").First(&p).Error
+	e = ps.DB.Not(notIn).Order("usenum ASC,delay ASC").First(&p).Error
 	return
 }
