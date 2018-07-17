@@ -77,7 +77,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		var proxy string
 		proxy = "http://" + p.IP + ":" + p.Port
 		fmt.Println("worker", id, "process", proxy)
-		// 是否正在处理
+		// is processing
 		_, has := pendingValidate.Load(proxy)
 		_, err := proxyServiceInstance.GetByIP(p.IP)
 		if !has && err != nil {
@@ -96,7 +96,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.Provence = resp.Location.Province
 				p.Delay = time.Now().Unix() - start
 
-				proxyServiceInstance.Save(&p)
+				proxyinabox.DB.Save(&p)
 				fmt.Println("worker", id, "find a avaliable proxy", p)
 			}
 			pendingValidate.Delete(proxy)

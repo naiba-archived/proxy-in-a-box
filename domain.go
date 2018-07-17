@@ -11,3 +11,8 @@ type Domain struct {
 
 	Activitys []Activity
 }
+
+//DomainService domain service
+type DomainService interface {
+	GetByName(name string) (Domain, error)
+}

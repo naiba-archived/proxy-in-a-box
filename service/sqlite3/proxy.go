@@ -15,8 +15,3 @@ func (ps *ProxyService) GetByIP(ip string) (proxyinabox.Proxy, error) {
 	var p proxyinabox.Proxy
 	return p, ps.DB.First(&p, "ip = ?", ip).Error
 }
-
-//Save save proxy
-func (ps *ProxyService) Save(p *proxyinabox.Proxy) error {
-	return ps.DB.Save(p).Error
-}

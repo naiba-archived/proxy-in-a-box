@@ -15,6 +15,7 @@ type Proxy struct {
 	Provence string `gorm:"type:varchar(15)"`
 	NotHTTPS bool
 	Delay    int64
+	Usenum   int64
 
 	Activitys []Activity
 }
@@ -32,5 +33,4 @@ type ProxyCrawler interface {
 //ProxyService proxy service
 type ProxyService interface {
 	GetByIP(ip string) (Proxy, error)
-	Save(p *Proxy) error
 }
