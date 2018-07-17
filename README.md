@@ -3,7 +3,7 @@
 
 Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
 
-# Usage
+## Usage
 1. get lastest Proxy-in-a-Box
     ```
     go get -u -v github.com/naiba/proxyinabox/cmd/proxy-in-a-box/...
@@ -20,5 +20,5 @@ Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler ser
     ```
     Set in the code, and then grab it, the **Proxy-in-a-Box** will automatically assign the proxy.
 
-# Demo
+## Demo
 Contact owner.
