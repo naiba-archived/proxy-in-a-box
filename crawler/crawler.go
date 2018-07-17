@@ -10,7 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
-	"github.com/naiba/proxyinabox/service/sqlite3"
+	"github.com/naiba/proxyinabox/service/mysql"
 	"github.com/parnurzeal/gorequest"
 )
 
@@ -31,7 +31,7 @@ type validateJSON struct {
 }
 
 func init() {
-	proxyServiceInstance = &sqlite3.ProxyService{DB: proxyinabox.DB}
+	proxyServiceInstance = &mysql.ProxyService{DB: proxyinabox.DB}
 	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.ProxyValidatorWorkerNum*2)
 	//start worker
 	for i := 1; i <= proxyinabox.ProxyValidatorWorkerNum; i++ {

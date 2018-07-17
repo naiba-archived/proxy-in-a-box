@@ -10,7 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/naiba/proxyinabox"
-	"github.com/naiba/proxyinabox/service/sqlite3"
+	"github.com/naiba/proxyinabox/service/mysql"
 )
 
 var domainService proxyinabox.DomainService
@@ -20,19 +20,25 @@ var proxyService proxyinabox.ProxyService
 //Serv serv the http proxy
 func Serv(httpPort, httpsPort string) {
 	//init service
-	domainService = &sqlite3.DomainService{DB: proxyinabox.DB}
-	activityService = &sqlite3.ActivityService{DB: proxyinabox.DB}
-	proxyService = &sqlite3.ProxyService{DB: proxyinabox.DB}
+	domainService = &mysql.DomainService{DB: proxyinabox.DB}
+	activityService = &mysql.ActivityService{DB: proxyinabox.DB}
+	proxyService = &mysql.ProxyService{DB: proxyinabox.DB}
 
 	//start http proxy server
 	httpServer := newServer(httpPort)
-	go httpServer.ListenAndServe()
+	go panicIfNotNil(httpServer.ListenAndServe())
 
 	//start https proxy server
 	var pemPath = "./server.pem"
 	var keyPath = "./server.key"
 	httpsServer := newServer(httpsPort)
-	go httpsServer.ListenAndServeTLS(pemPath, keyPath)
+	go panicIfNotNil(httpsServer.ListenAndServeTLS(pemPath, keyPath))
+}
+
+func panicIfNotNil(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 func newServer(port string) *http.Server {

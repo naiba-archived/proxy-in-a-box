@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	// sqlite driver for GORM
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	// mysql driver for GORM
+	_ "github.com/go-sql-driver/mysql"
 )
 
 //AppName app's name
@@ -34,11 +34,11 @@ func init() {
 
 	// in-memory db "mode=memory"
 	var err error
-	DB, err = gorm.Open("sqlite3", "file:box.db?cache=shared&mode=rwc&_loc=Asia/Shanghai")
+	DB, err = gorm.Open("mysql", "root:123456@tcp(localhost:3306)/proxy?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
 	}
-	//DB = DB.Debug()
+	// DB = DB.Debug()
 	DB.AutoMigrate(&Proxy{}, &Activity{}, &Domain{})
 }
