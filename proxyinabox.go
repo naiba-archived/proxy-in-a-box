@@ -32,9 +32,9 @@ func init() {
 		panic("proxy verify duration (must >5 minute)")
 	}
 
-	// in-memory db "cache=shared&mode=memory&"
+	// in-memory db "mode=memory"
 	var err error
-	DB, err = gorm.Open("sqlite3", "file:box.db?_loc=Asia/Shanghai")
+	DB, err = gorm.Open("sqlite3", "file:box.db?cache=shared&mode=rwc&_loc=Asia/Shanghai")
 	if err != nil {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")

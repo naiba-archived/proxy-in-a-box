@@ -1,4 +1,4 @@
 /pkg
 .DS_Store
-cmd/proxy-in-a-box/box.db
+cmd/proxy-in-a-box/box.db*
 cmd/proxy-in-a-box/proxy-in-a-box
