@@ -24,9 +24,9 @@ const DomainsPerIPHalfAnHour = 10
 var DB *gorm.DB
 
 func init() {
-	// in-memory db
+	// in-memory db "cache=shared&mode=memory&"
 	var err error
-	DB, err = gorm.Open("sqlite3", "file:box.db?cache=shared&mode=memory&_loc=Asia/Shanghai")
+	DB, err = gorm.Open("sqlite3", "file:box.db?_loc=Asia/Shanghai")
 	if err != nil {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")

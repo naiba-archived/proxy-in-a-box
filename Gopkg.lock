@@ -65,6 +65,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/robfig/cron"
+  packages = ["."]
+  revision = "b41be1df696709bb6395fe435af20370037c0b4c"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/xuri/excelize"
   packages = ["."]
   revision = "eb62256d165607c6877ce88efbba10c119137b3d"
@@ -105,6 +111,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "37eee6e3ee7cc7034809bd9a92fbabfcb5614e75b432b1aa3c221175d57399fb"
+  inputs-digest = "090d4891433b3cdc012903cdbe8728a0d08c4a5b068f39924cdc9552768a627d"
   solver-name = "gps-cdcl"
   solver-version = 1

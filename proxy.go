@@ -2,6 +2,7 @@ package proxyinabox
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -9,14 +10,15 @@ import (
 //Proxy proxy model
 type Proxy struct {
 	gorm.Model
-	IP       string `gorm:"type:varchar(15);unique_index"`
-	Port     string `gorm:"type:varchar(5)"`
-	Country  string `gorm:"type:varchar(15)"`
-	Provence string `gorm:"type:varchar(15)"`
-	Platform int
-	NotHTTPS bool
-	Delay    int64
-	Usenum   int64
+	IP         string `gorm:"type:varchar(15);unique_index"`
+	Port       string `gorm:"type:varchar(5)"`
+	Country    string `gorm:"type:varchar(15)"`
+	Provence   string `gorm:"type:varchar(15)"`
+	Platform   int
+	NotHTTPS   bool
+	Delay      int64
+	Usenum     int64
+	LastVerify time.Time
 
 	Activitys []Activity
 }
