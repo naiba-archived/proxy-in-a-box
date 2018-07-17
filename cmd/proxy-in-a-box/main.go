@@ -15,12 +15,17 @@ func main() {
 	fmt.Println("AppName:", proxyinabox.AppName)
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
+	crawler.FetchProxies()
+
 	c := cron.New()
 	c.AddFunc("@daily", crawler.FetchProxies)
 	c.AddFunc("0 "+strconv.Itoa(proxyinabox.VerifyDuration)+" * * * *", crawler.Verify)
 	c.Start()
 
 	proxy.Serv("8080", "8081")
+
+	fmt.Println("HTTP proxy: `http://localhost:8080`")
+	fmt.Println("HTTPS proxy: `https://localhost:8081`")
 
 	select {}
 }
