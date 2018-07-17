@@ -16,6 +16,7 @@ func main() {
 	fmt.Println("AppVersion:", proxyinabox.AppVersion)
 
 	crawler.FetchProxies()
+	//crawler.Verify()
 
 	c := cron.New()
 	c.AddFunc("@daily", crawler.FetchProxies)

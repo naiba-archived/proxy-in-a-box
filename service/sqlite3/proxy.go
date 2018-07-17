@@ -26,6 +26,6 @@ func (ps *ProxyService) GetFree(notIn []uint) (p proxyinabox.Proxy, e error) {
 
 //GetUnVerified get un verified proxies
 func (ps *ProxyService) GetUnVerified() (p []proxyinabox.Proxy, e error) {
-	e = ps.DB.Where("last_verify < ", time.Now().Add(time.Minute*(proxyinabox.VerifyDuration-5)*-1)).Find(&p).Error
+	e = ps.DB.Where("last_verify < ?", time.Now().Add(time.Minute*(proxyinabox.VerifyDuration-5)*-1)).Find(&p).Error
 	return
 }
