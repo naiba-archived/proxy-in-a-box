@@ -33,4 +33,6 @@ type ProxyCrawler interface {
 //ProxyService proxy service
 type ProxyService interface {
 	GetByIP(ip string) (Proxy, error)
+	GetFree(notIn []uint) (Proxy, error)
+	GetUsedFree() (p Proxy, e error)
 }

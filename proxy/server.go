@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,12 +14,14 @@ import (
 
 var domainService proxyinabox.DomainService
 var activityService proxyinabox.ActivityService
+var proxyService proxyinabox.ProxyService
 
 //Serv serv the http proxy
 func Serv(httpPort, httpsPort string) {
 	//init service
 	domainService = &sqlite3.DomainService{DB: proxyinabox.DB}
 	activityService = &sqlite3.ActivityService{DB: proxyinabox.DB}
+	proxyService = &sqlite3.ProxyService{DB: proxyinabox.DB}
 
 	//start http proxy server
 	httpServer := newServer(httpPort)
@@ -62,33 +63,53 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.DomainsPerIPHalfAnHour)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
-	//get a proxy
-	p, f := getProxy(r.Method, domain)
 	//set response header
 	w.Header().Add("X-Powered-By", "Naiba")
 	//dispath http request
-	f(p, w, r)
-	if r.Method == http.MethodConnect {
-		handleTunneling("localhost:1087", w, r)
-	} else {
-		handleHTTP("http://localhost:1087", w, r)
-	}
+	dispatchRequest(domain, w, r)
 }
 
-func getProxy(method, domain string) (string, func(p string, w http.ResponseWriter, r *http.Request)) {
+func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
+	var p proxyinabox.Proxy
 	//get domain by name
 	d, err := domainService.GetByName(domain)
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			//unknown error
-			fmt.Println("panic", err)
-		} else {
-			//new domain save to database
-			proxyinabox.DB.Save(&proxyinabox.Domain{
-				Name: domain,
-			})
-			//get a fresh proxy
-
+	if err == gorm.ErrRecordNotFound {
+		//new domain, save to database
+		proxyinabox.DB.Save(&proxyinabox.Domain{
+			Name: domain,
+		})
+		//get a fresh proxy
+		p, err = proxyService.GetFree(nil)
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
+			return
 		}
+	} else if err == nil {
+		var as []proxyinabox.Activity
+		as, err = activityService.GetByDomainID(d.ID)
+		if err == nil || err == gorm.ErrRecordNotFound {
+			pids := make([]uint, 0)
+			for _, a := range as {
+				pids = append(pids, a.ID)
+			}
+			p, err = proxyService.GetFree(pids)
+			if err == gorm.ErrRecordNotFound {
+				//get a used free proxy
+				p, err = proxyService.GetUsedFree()
+			}
+		}
+	}
+
+	if err != nil {
+		http.Error(w, "Unkown error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	go activityService.Save(d.ID, p.ID)
+
+	if r.Method == http.MethodConnect {
+		handleTunneling(p, w, r)
+	} else {
+		handleHTTP(p, w, r)
 	}
 }

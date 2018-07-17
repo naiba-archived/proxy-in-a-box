@@ -8,12 +8,14 @@ import (
 type Activity struct {
 	gorm.Model
 	Domain   Domain
-	DomainID int64
+	DomainID uint `gorm:"unique_index"`
 	Proxy    Proxy
-	ProxyID  int64
+	ProxyID  uint `gorm:"unique_index"`
+	Usenum   int64
 }
 
 //ActivityService activity service
 type ActivityService interface {
-	GetByDomainID(did int64) ([]Activity, error)
+	GetByDomainID(did uint) ([]Activity, error)
+	Save(d, p uint)
 }
