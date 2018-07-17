@@ -94,6 +94,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.Country = resp.Location.CountryName
 				p.Provence = resp.Location.Province
 				p.Delay = time.Now().Unix() - start
+				p.LastVerify = time.Now()
 
 				proxyinabox.DB.Save(&p)
 				fmt.Println("worker", id, "find a avaliable proxy", p)
