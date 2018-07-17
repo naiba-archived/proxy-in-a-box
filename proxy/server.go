@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -75,27 +76,34 @@ func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
 	d, err := domainService.GetByName(domain)
 	if err == gorm.ErrRecordNotFound {
 		//new domain, save to database
-		proxyinabox.DB.Save(&proxyinabox.Domain{
-			Name: domain,
-		})
-		//get a fresh proxy
-		p, err = proxyService.GetFree(nil)
-		if err == gorm.ErrRecordNotFound {
-			http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
-			return
+		d.Name = domain
+		err = proxyinabox.DB.Save(&d).Error
+		if err == nil {
+			//get a fresh proxy
+			p, err = proxyService.GetFree(nil)
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
+				return
+			}
 		}
 	} else if err == nil {
 		var as []proxyinabox.Activity
 		as, err = activityService.GetByDomainID(d.ID)
-		if err == nil || err == gorm.ErrRecordNotFound {
+		if err == nil && len(as) > 0 {
 			pids := make([]uint, 0)
 			for _, a := range as {
-				pids = append(pids, a.ID)
+				pids = append(pids, a.ProxyID)
 			}
 			p, err = proxyService.GetFree(pids)
 			if err == gorm.ErrRecordNotFound {
-				//get a used free proxy
-				p, err = proxyService.GetUsedFree()
+				p, err = proxyService.GetFree(nil)
+			}
+		} else {
+			//get a fresh proxy
+			p, err = proxyService.GetFree(nil)
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
+				return
 			}
 		}
 	}
@@ -106,6 +114,9 @@ func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	go activityService.Save(d.ID, p.ID)
+
+	fmt.Println(domain, "-->", p)
+	return
 
 	if r.Method == http.MethodConnect {
 		handleTunneling(p, w, r)

@@ -21,11 +21,3 @@ func (ps *ProxyService) GetFree(notIn []uint) (p proxyinabox.Proxy, e error) {
 	e = ps.DB.Not(notIn).Order("usenum ASC").First(&p).Error
 	return
 }
-
-//GetUsedFree get used free proxy
-func (ps *ProxyService) GetUsedFree() (p proxyinabox.Proxy, e error) {
-	e = ps.DB.Joins("inner join activity where activity.proxy_id = proxy.id").
-		Order("activity.usenum ASC").
-		First(&p).Error
-	return
-}

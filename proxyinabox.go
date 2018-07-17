@@ -31,5 +31,6 @@ func init() {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
 	}
+	DB = DB.Debug()
 	DB.AutoMigrate(&Proxy{}, &Activity{}, &Domain{})
 }

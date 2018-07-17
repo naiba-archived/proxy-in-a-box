@@ -21,8 +21,8 @@ type Proxy struct {
 }
 
 func (p Proxy) String() string {
-	return fmt.Sprintf("[√]proxy-print#[%s:%s country:%s provence:%s HTTPS:%t delay:%d]",
-		p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay)
+	return fmt.Sprintf("[√]proxy-print#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d useNum:%d]",
+		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Usenum)
 }
 
 //ProxyCrawler proxy crawler
@@ -34,5 +34,4 @@ type ProxyCrawler interface {
 type ProxyService interface {
 	GetByIP(ip string) (Proxy, error)
 	GetFree(notIn []uint) (Proxy, error)
-	GetUsedFree() (p Proxy, e error)
 }

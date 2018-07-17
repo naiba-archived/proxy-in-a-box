@@ -76,7 +76,6 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		p.IP = strings.TrimSpace(p.IP)
 		var proxy string
 		proxy = "http://" + p.IP + ":" + p.Port
-		fmt.Println("worker", id, "process", proxy)
 		// is processing
 		_, has := pendingValidate.Load(proxy)
 		_, err := proxyServiceInstance.GetByIP(p.IP)

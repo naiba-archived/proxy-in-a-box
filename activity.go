@@ -8,9 +8,9 @@ import (
 type Activity struct {
 	gorm.Model
 	Domain   Domain
-	DomainID uint `gorm:"unique_index"`
+	DomainID uint `gorm:"index"`
 	Proxy    Proxy
-	ProxyID  uint `gorm:"unique_index"`
+	ProxyID  uint `gorm:"index"`
 	Usenum   int64
 }
 
