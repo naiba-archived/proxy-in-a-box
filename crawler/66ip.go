@@ -43,7 +43,7 @@ func (p *P66IP) Fetch() error {
 					var p proxyinabox.Proxy
 					p.IP = ipinfo[0]
 					p.Port = ipinfo[1]
-
+					p.Platform = 1
 					validateJobs <- p
 				}
 			}

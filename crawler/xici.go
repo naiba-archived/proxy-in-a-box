@@ -57,6 +57,7 @@ func (xc *Xici) Fetch() error {
 					}
 					return true
 				})
+				p.Platform = 3
 				validateJobs <- p
 			})
 

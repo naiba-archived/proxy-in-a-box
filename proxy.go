@@ -13,6 +13,7 @@ type Proxy struct {
 	Port     string `gorm:"type:varchar(5)"`
 	Country  string `gorm:"type:varchar(15)"`
 	Provence string `gorm:"type:varchar(15)"`
+	Platform int
 	NotHTTPS bool
 	Delay    int64
 	Usenum   int64
@@ -21,8 +22,8 @@ type Proxy struct {
 }
 
 func (p Proxy) String() string {
-	return fmt.Sprintf("[√]proxy-print#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d useNum:%d]",
-		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Usenum)
+	return fmt.Sprintf("[√]proxy#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d useNum:%d platform:%d]",
+		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Usenum, p.Platform)
 }
 
 //ProxyCrawler proxy crawler

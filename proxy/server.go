@@ -116,7 +116,6 @@ func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
 	go activityService.Save(d.ID, p.ID)
 
 	fmt.Println(domain, "-->", p)
-	return
 
 	if r.Method == http.MethodConnect {
 		handleTunneling(p, w, r)

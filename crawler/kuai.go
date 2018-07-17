@@ -60,6 +60,7 @@ func (k *Kuai) Fetch() error {
 					}
 					return true
 				})
+				p.Platform = 2
 				validateJobs <- p
 			})
 
