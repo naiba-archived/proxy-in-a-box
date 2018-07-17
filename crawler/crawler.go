@@ -31,6 +31,7 @@ type validateJSON struct {
 }
 
 func init() {
+	proxyServiceInstance = &sqlite3.ProxyService{DB: proxyinabox.DB}
 	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.ProxyValidatorWorkerNum*2)
 	//start worker
 	for i := 1; i <= proxyinabox.ProxyValidatorWorkerNum; i++ {
@@ -58,7 +59,6 @@ func getDocFromURL(url string) (*goquery.Document, error) {
 
 //FetchProxies fetch new proxies
 func FetchProxies() {
-	proxyServiceInstance = &sqlite3.ProxyService{DB: proxyinabox.DB}
 	cs := []proxyinabox.ProxyCrawler{
 		newKuai(),
 		newXici(),
