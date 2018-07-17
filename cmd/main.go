@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/robfig/cron"
 
@@ -16,7 +17,7 @@ func main() {
 
 	c := cron.New()
 	c.AddFunc("@daily", crawler.FetchProxies)
-	c.AddFunc("@hourly", crawler.Verify)
+	c.AddFunc("0 "+strconv.Itoa(proxyinabox.VerifyDuration)+" * * * *", crawler.Verify)
 	c.Start()
 
 	proxy.Serv("8080", "8081")

@@ -31,7 +31,7 @@ type validateJSON struct {
 }
 
 func init() {
-	validateJobs = make(chan proxyinabox.Proxy, 100)
+	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.ProxyValidatorWorkerNum*2)
 	//start worker
 	for i := 1; i <= proxyinabox.ProxyValidatorWorkerNum; i++ {
 		go validator(i, validateJobs)

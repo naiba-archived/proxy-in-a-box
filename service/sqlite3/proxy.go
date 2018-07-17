@@ -1,6 +1,8 @@
 package sqlite3
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	"github.com/naiba/proxyinabox"
 )
@@ -19,5 +21,11 @@ func (ps *ProxyService) GetByIP(ip string) (proxyinabox.Proxy, error) {
 //GetFree get a free proxy
 func (ps *ProxyService) GetFree(notIn []uint) (p proxyinabox.Proxy, e error) {
 	e = ps.DB.Not(notIn).Order("usenum ASC,delay ASC").First(&p).Error
+	return
+}
+
+//GetUnVerified get un verified proxies
+func (ps *ProxyService) GetUnVerified() (p []proxyinabox.Proxy, e error) {
+	e = ps.DB.Where("last_verify < ", time.Now().Add(time.Minute*(proxyinabox.VerifyDuration-5)*-1)).Find(&p).Error
 	return
 }

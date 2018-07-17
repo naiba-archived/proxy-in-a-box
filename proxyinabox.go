@@ -20,10 +20,18 @@ const ProxyValidatorWorkerNum = 20
 //DomainsPerIPHalfAnHour domains num per ip on half hour
 const DomainsPerIPHalfAnHour = 10
 
+//VerifyDuration proxy verify duration (must >5 minute)
+const VerifyDuration = 30
+
 //DB instance
 var DB *gorm.DB
 
 func init() {
+
+	if VerifyDuration <= 5 {
+		panic("proxy verify duration (must >5 minute)")
+	}
+
 	// in-memory db "cache=shared&mode=memory&"
 	var err error
 	DB, err = gorm.Open("sqlite3", "file:box.db?_loc=Asia/Shanghai")
