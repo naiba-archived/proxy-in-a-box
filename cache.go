@@ -31,7 +31,7 @@ func CheckIPLimit(ip string) bool {
 	} else {
 		var tmp int32
 		tmp = 1
-		cacheInstance.Set(ip+"l", &tmp, time.Minute*1)
+		cacheInstance.Set(ip+"l", &tmp, time.Minute)
 	}
 	return true
 }

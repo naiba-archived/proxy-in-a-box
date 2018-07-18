@@ -21,7 +21,7 @@ const ProxyValidatorWorkerNum = 20
 const DomainsPerIPHalfAnHour = 10
 
 //RequestLimitPerIPOneMinute request limit per ip at one minute
-const RequestLimitPerIPOneMinute int32 = 200
+const RequestLimitPerIPOneMinute int32 = 420
 
 //VerifyDuration proxy verify duration (must >5 minute)
 const VerifyDuration = 30
@@ -42,6 +42,8 @@ func init() {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
 	}
-	// DB = DB.Debug()
+
+	//DB.LogMode(true)
+
 	DB.AutoMigrate(&Proxy{}, &Activity{}, &Domain{})
 }
