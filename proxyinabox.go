@@ -34,7 +34,7 @@ func init() {
 
 	// in-memory db "mode=memory"
 	var err error
-	DB, err = gorm.Open("mysql", "root:123456@tcp(localhost:3306)/proxy?charset=utf8mb4&parseTime=True&loc=Local")
+	DB, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/proxy?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
