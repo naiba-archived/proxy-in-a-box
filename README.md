@@ -50,6 +50,7 @@ sys:
 ```
 
 ## Benchmark
+Server bandwidth and mysql configuration will affect the test results, mysql configuration affects the scheduling of the agent.
 ```shell
 ~$ wrk -H "Naiba: lifelonglearning"  -t30 -c30 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
 Running 1m test @ http://127.0.0.1:8080
