@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
 	"github.com/naiba/proxyinabox/service/mysql"
 )
@@ -26,13 +25,15 @@ func Serv(httpPort, httpsPort string) {
 
 	//start http proxy server
 	httpServer := newServer(httpPort)
-	go com.PanicIfNotNil(httpServer.ListenAndServe())
+	go httpServer.ListenAndServe()
+	fmt.Println("HTTP proxy: `http://localhost:" + httpPort + "`")
 
 	//start https proxy server
 	var pemPath = "./server.pem"
 	var keyPath = "./server.key"
 	httpsServer := newServer(httpsPort)
-	go com.PanicIfNotNil(httpsServer.ListenAndServeTLS(pemPath, keyPath))
+	go httpsServer.ListenAndServeTLS(pemPath, keyPath)
+	fmt.Println("HTTPS proxy: `https://localhost:" + httpsPort + "`")
 }
 
 func newServer(port string) *http.Server {

@@ -22,8 +22,9 @@ var rootCmd = &cobra.Command{
 	Short: "Proxy-in-a-Box provide many proxies.",
 	Long:  `Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("AppName:", proxyinabox.Config.Sys.Name)
-		fmt.Println("AppVersion:", proxyinabox.Config.Sys.Ver)
+		fmt.Println("[Proxy-in-a-Box]", proxyinabox.Config.Sys.Name, "v1.0.0")
+
+		proxy.Serv(httpProxyPort, httpsProxyPort)
 
 		crawler.FetchProxies()
 		//crawler.Verify()
@@ -32,11 +33,6 @@ var rootCmd = &cobra.Command{
 		c.AddFunc("@daily", crawler.FetchProxies)
 		c.AddFunc("0 "+strconv.Itoa(proxyinabox.Config.Sys.VerifyDuration)+" * * * *", crawler.Verify)
 		c.Start()
-
-		proxy.Serv(httpProxyPort, httpsProxyPort)
-
-		fmt.Println("HTTP proxy: `http://localhost:" + httpProxyPort + "`")
-		fmt.Println("HTTPS proxy: `https://localhost:" + httpsProxyPort + "`")
 
 		select {}
 	},
@@ -54,8 +50,8 @@ func init() {
 
 	//init sys config
 	proxyinabox.Init()
-	//init crawler
-	crawler.Init(proxyinabox.DB)
+	crawler.InitCrawlerWorker(proxyinabox.DB)
+	crawler.InitVerifyWorker()
 }
 
 func main() {

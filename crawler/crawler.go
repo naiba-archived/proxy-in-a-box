@@ -32,8 +32,8 @@ type validateJSON struct {
 	}
 }
 
-//Init init crawler
-func Init(d *gorm.DB) {
+//InitCrawlerWorker init crawler
+func InitCrawlerWorker(d *gorm.DB) {
 	proxyServiceInstance = &mysql.ProxyService{DB: d}
 	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.Config.Sys.ProxyVerifyWorker*2)
 	//start worker
