@@ -42,7 +42,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&configFilePath, "conf", "c", "./pb.yaml", "config file")
 	rootCmd.PersistentFlags().StringVarP(&httpProxyPort, "hp", "p", "8080", "http proxy server port")
-	rootCmd.PersistentFlags().StringVarP(&httpProxyPort, "sp", "s", "8081", "https proxy server port")
+	rootCmd.PersistentFlags().StringVarP(&httpsProxyPort, "sp", "s", "8081", "https proxy server port")
 }
 
 func main() {
