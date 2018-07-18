@@ -6,3 +6,5 @@ before_install:
 script:
   - go list ./... | xargs -L1 golint
   - go test -v -race -cover ./...
+  - cd cmd/proxy-in-a-box
+  - go build
