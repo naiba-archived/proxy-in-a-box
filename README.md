@@ -2,6 +2,18 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/naiba/proxyinabox)](https://goreportcard.com/report/github.com/naiba/proxyinabox) [![travis](https://travis-ci.com/naiba/proxyinabox.svg?branch=master)](https://travis-ci.com/naiba/proxyinabox)
 
 Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
+```shell
+Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
+
+Usage:
+  proxy-in-a-box [flags]
+
+Flags:
+  -c, --conf string   config file (default "./pb.yaml")
+  -h, --help          help for proxy-in-a-box
+  -p, --hp string     http proxy server port (default "8080")
+  -s, --sp string     https proxy server port (default "8081")
+```
 
 ## Usage
 1. get lastest Proxy-in-a-Box
