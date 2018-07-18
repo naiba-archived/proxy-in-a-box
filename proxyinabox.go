@@ -20,6 +20,9 @@ const ProxyValidatorWorkerNum = 20
 //DomainsPerIPHalfAnHour domains num per ip on half hour
 const DomainsPerIPHalfAnHour = 10
 
+//RequestLimitPerIPOneMinute request limit per ip at one minute
+const RequestLimitPerIPOneMinute int32 = 200
+
 //VerifyDuration proxy verify duration (must >5 minute)
 const VerifyDuration = 30
 

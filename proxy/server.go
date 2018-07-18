@@ -64,9 +64,16 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ip = "unknown"
 	}
+	//check request limit
+	if !proxyinabox.CheckIPLimit(ip) {
+		fmt.Println("[x] ip request limited", ip)
+		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.RequestLimitPerIPOneMinute)+" requests at one minute per IP.["+ip+"]", http.StatusForbidden)
+		return
+	}
 	//check domain limit
 	var domain = r.URL.Hostname()
 	if !proxyinabox.CheckIPDomain(ip, domain) {
+		fmt.Println("[x] ip domain limited", ip)
 		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.DomainsPerIPHalfAnHour)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
