@@ -12,8 +12,8 @@ import (
 var verifyJob chan proxyinabox.Proxy
 
 func init() {
-	verifyJob = make(chan proxyinabox.Proxy, proxyinabox.ProxyValidatorWorkerNum)
-	for i := 0; i < proxyinabox.ProxyValidatorWorkerNum; i++ {
+	verifyJob = make(chan proxyinabox.Proxy, proxyinabox.Config.Sys.ProxyVerifyWorker)
+	for i := 0; i < proxyinabox.Config.Sys.ProxyVerifyWorker; i++ {
 		go getDelay(verifyJob)
 	}
 }

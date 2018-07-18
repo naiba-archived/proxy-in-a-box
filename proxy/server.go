@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-
+	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
 	"github.com/naiba/proxyinabox/service/mysql"
 )
@@ -26,19 +26,13 @@ func Serv(httpPort, httpsPort string) {
 
 	//start http proxy server
 	httpServer := newServer(httpPort)
-	go panicIfNotNil(httpServer.ListenAndServe())
+	go com.PanicIfNotNil(httpServer.ListenAndServe())
 
 	//start https proxy server
 	var pemPath = "./server.pem"
 	var keyPath = "./server.key"
 	httpsServer := newServer(httpsPort)
-	go panicIfNotNil(httpsServer.ListenAndServeTLS(pemPath, keyPath))
-}
-
-func panicIfNotNil(err error) {
-	if err != nil {
-		panic(err)
-	}
+	go com.PanicIfNotNil(httpsServer.ListenAndServeTLS(pemPath, keyPath))
 }
 
 func newServer(port string) *http.Server {
@@ -67,14 +61,14 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	//check request limit
 	if !proxyinabox.CheckIPLimit(ip) {
 		fmt.Println("[x] ip request limited", ip)
-		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.RequestLimitPerIPOneMinute)+" requests at one minute per IP.["+ip+"]", http.StatusForbidden)
+		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.Config.Sys.RequestLimitPerIP)+" requests at one minute per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
 	//check domain limit
 	var domain = r.URL.Hostname()
 	if !proxyinabox.CheckIPDomain(ip, domain) {
 		fmt.Println("[x] ip domain limited", ip)
-		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.DomainsPerIPHalfAnHour)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
+		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.Config.Sys.DomainsPerIP)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
 	//set response header

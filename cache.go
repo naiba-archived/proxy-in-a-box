@@ -23,7 +23,7 @@ func init() {
 func CheckIPLimit(ip string) bool {
 	num, ok := cacheInstance.Get(ip + "l")
 	if ok {
-		if *num.(*int32) > RequestLimitPerIPOneMinute {
+		if *num.(*int32) > Config.Sys.RequestLimitPerIP {
 			return false
 		} else {
 			atomic.AddInt32(num.(*int32), 1)
@@ -47,7 +47,7 @@ func CheckIPDomain(ip, domain string) bool {
 		if had {
 			return true
 		}
-		if len(domains.list) < DomainsPerIPHalfAnHour {
+		if len(domains.list) < Config.Sys.DomainsPerIP {
 			domains.list[domain] = struct{}{}
 			return true
 		}

@@ -8,30 +8,35 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-//AppName app's name
-const AppName = "Proxy-in-a-Box"
-
-//AppVersion app's version
-const AppVersion = "1.0"
-
-//ProxyValidatorWorkerNum verify proxy's worker num
-const ProxyValidatorWorkerNum = 20
-
-//DomainsPerIPHalfAnHour domains num per ip on half hour
-const DomainsPerIPHalfAnHour = 10
-
-//RequestLimitPerIPOneMinute request limit per ip at one minute
-const RequestLimitPerIPOneMinute int32 = 420
-
-//VerifyDuration proxy verify duration (must >5 minute)
-const VerifyDuration = 30
-
 //DB instance
 var DB *gorm.DB
 
-func init() {
+//Conf config struct
+type Conf struct {
+	Debug bool
+	DB    struct {
+		Host   string
+		Port   string
+		User   string
+		Pass   string
+		Dbname string
+	}
+	Sys struct {
+		Name              string
+		Ver               string
+		ProxyVerifyWorker int   `mapstructure:"proxy_verify_worker"`
+		DomainsPerIP      int   `mapstructure:"domains_per_ip"`
+		RequestLimitPerIP int32 `mapstructure:"request_limit_per_ip"`
+		VerifyDuration    int   `mapstructure:"verify_duration"`
+	}
+}
 
-	if VerifyDuration <= 5 {
+//Config system config
+var Config Conf
+
+//Init init system
+func Init() {
+	if Config.Sys.VerifyDuration <= 5 {
 		panic("proxy verify duration (must >5 minute)")
 	}
 
@@ -43,7 +48,9 @@ func init() {
 		panic("failed to connect database")
 	}
 
-	//DB.LogMode(true)
+	if Config.Debug {
+		DB.LogMode(true)
+	}
 
 	DB.AutoMigrate(&Proxy{}, &Activity{}, &Domain{})
 }
