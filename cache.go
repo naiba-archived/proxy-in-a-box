@@ -25,9 +25,8 @@ func CheckIPLimit(ip string) bool {
 	if ok {
 		if *num.(*int32) > Config.Sys.RequestLimitPerIP {
 			return false
-		} else {
-			atomic.AddInt32(num.(*int32), 1)
 		}
+		atomic.AddInt32(num.(*int32), 1)
 	} else {
 		var tmp int32
 		tmp = 1

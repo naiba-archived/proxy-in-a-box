@@ -57,7 +57,7 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	if len(ipSlice) == 2 {
 		ip = ipSlice[0]
 	} else {
-		ip = "unknown"
+		ip = "Unknown"
 	}
 	//check request limit
 	if !proxyinabox.CheckIPLimit(ip) {
@@ -117,7 +117,7 @@ func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, "Unkown error: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Unknown error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

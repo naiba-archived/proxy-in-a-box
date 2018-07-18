@@ -100,7 +100,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.LastVerify = time.Now()
 
 				proxyinabox.DB.Save(&p)
-				fmt.Println("worker", id, "find a avaliable proxy", p)
+				fmt.Println("worker", id, "find a available proxy", p)
 			}
 			pendingValidate.Delete(proxy)
 		}
