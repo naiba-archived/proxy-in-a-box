@@ -28,7 +28,7 @@ type validateJSON struct {
 	}
 }
 
-func init() {
+func initC() {
 	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.Config.Sys.ProxyVerifyWorker*2)
 	//start worker
 	for i := 1; i <= proxyinabox.Config.Sys.ProxyVerifyWorker; i++ {
@@ -74,7 +74,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		proxy := p.URI()
 		// is processing
 		_, has := pendingValidate.Load(proxy)
-		_, has2 := proxyinabox.CacheInstance.GetProxyByURI(proxy)
+		_, has2 := proxyinabox.CacheInstance.GetProxyIDByURI(proxy)
 		if !has && !has2 {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
@@ -92,7 +92,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.Delay = time.Now().Unix() - start
 				p.LastVerify = time.Now()
 
-				if e := proxyinabox.CacheInstance.SaveProxy(p); e != nil {
+				if e := proxyinabox.CacheInstance.SaveProxy(p); e == nil {
 					fmt.Println("worker", id, "find a available proxy", p)
 				} else {
 					fmt.Println("worker", id, "error save proxy", e.Error())

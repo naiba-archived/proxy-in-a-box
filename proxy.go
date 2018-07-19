@@ -20,6 +20,11 @@ type Proxy struct {
 	LastVerify time.Time
 }
 
+//ProxyService proxy service
+type ProxyService interface {
+	GetUnVerified() ([]Proxy, error)
+}
+
 func (p Proxy) String() string {
 	return fmt.Sprintf("[√]proxy#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d platform:%d]",
 		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Platform)

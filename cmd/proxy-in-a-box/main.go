@@ -48,10 +48,8 @@ func init() {
 	com.PanicIfNotNil(viper.ReadInConfig())
 	com.PanicIfNotNil(viper.Unmarshal(&proxyinabox.Config))
 
-	//init sys config
 	proxyinabox.Init()
-	crawler.InitCrawlerWorker(proxyinabox.DB)
-	crawler.InitVerifyWorker()
+	crawler.Init()
 }
 
 func main() {

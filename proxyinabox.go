@@ -2,8 +2,11 @@ package proxyinabox
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
+	cache "github.com/patrickmn/go-cache"
+
 	// mysql driver for GORM
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -51,5 +54,21 @@ func Init() {
 		DB.LogMode(true)
 	}
 
-	DB.AutoMigrate(&Proxy{}, &Domain{})
+	DB.AutoMigrate(&Proxy{})
+
+	loadCache()
+}
+
+func loadCache() {
+	cacheInstance = cache.New(time.Minute*5, time.Minute)
+	var ps []Proxy
+	DB.Model(&Proxy{}).Find(&ps)
+	proxyQueue.mu.Lock()
+	defer proxyQueue.mu.Unlock()
+	for _, p := range ps {
+		tmp := p
+		proxyQueue.list = append(proxyQueue.list, p.ID)
+		proxyCache.Store(p.ID, &tmp)
+		proxyIndex.Store(p.URI(), p.ID)
+	}
 }

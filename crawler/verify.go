@@ -1,18 +1,25 @@
 package crawler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/naiba/proxyinabox"
+	"github.com/naiba/proxyinabox/service"
 	"github.com/parnurzeal/gorequest"
 )
 
 var verifyJob chan proxyinabox.Proxy
+var proxyServiceInstance proxyinabox.ProxyService
 
-//InitVerifyWorker init verify worker
-func InitVerifyWorker() {
+//Init crawler
+func Init() {
+	initV()
+	initC()
+}
+
+func initV() {
+	proxyServiceInstance = &service.ProxyService{DB: proxyinabox.DB}
 	verifyJob = make(chan proxyinabox.Proxy, proxyinabox.Config.Sys.ProxyVerifyWorker)
 	for i := 0; i < proxyinabox.Config.Sys.ProxyVerifyWorker; i++ {
 		go getDelay(verifyJob)
@@ -21,12 +28,7 @@ func InitVerifyWorker() {
 
 //Verify verify proxies in database
 func Verify() {
-	list, err := proxyServiceInstance.GetUnVerified()
-	if err != nil {
-		fmt.Println(err)
-		Verify()
-		return
-	}
+	list, _ := proxyServiceInstance.GetUnVerified()
 	for _, p := range list {
 		verifyJob <- p
 	}
@@ -40,7 +42,7 @@ func getDelay(pc chan proxyinabox.Proxy) {
 		_, _, errs := gorequest.New().Timeout(time.Second*5).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
 		delay := time.Now().Unix() - start
 		if len(errs) != 0 || resp.IP != p.IP {
-			proxyinabox.DB.Delete(&p)
+			proxyinabox.CacheInstance.DeleteProxy(p)
 			continue
 		}
 		p.Delay = delay

@@ -7,18 +7,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
 	"github.com/naiba/proxyinabox"
+	"github.com/naiba/proxyinabox/service"
 )
 
-var domainService proxyinabox.DomainService
 var proxyService proxyinabox.ProxyService
 
 //Serv serv the http proxy
 func Serv(httpPort, httpsPort string) {
 	//init service
-	domainService = &mysql.DomainService{DB: proxyinabox.DB}
-	proxyService = &mysql.ProxyService{DB: proxyinabox.DB}
+	proxyService = &service.ProxyService{DB: proxyinabox.DB}
 
 	//start http proxy server
 	httpServer := newServer(httpPort)
@@ -58,68 +56,30 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		ip = "Unknown"
 	}
 	//check request limit
-	if !proxyinabox.CheckIPLimit(ip) {
+	if !proxyinabox.CacheInstance.CheckIPLimit(ip) {
 		fmt.Println("[x] ip request limited", ip)
 		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.Config.Sys.RequestLimitPerIP)+" requests at one minute per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
 	//check domain limit
 	var domain = r.URL.Hostname()
-	if !proxyinabox.CheckIPDomain(ip, domain) {
+	if !proxyinabox.CacheInstance.CheckIPDomain(ip, domain) {
 		fmt.Println("[x] ip domain limited", ip)
 		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.Config.Sys.DomainsPerIP)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
 	//set response header
 	w.Header().Add("X-Powered-By", "Naiba")
-	//dispath http request
-	dispatchRequest(domain, w, r)
-}
 
-func dispatchRequest(domain string, w http.ResponseWriter, r *http.Request) {
-	var p proxyinabox.Proxy
-	//get domain by name
-	d, err := domainService.GetByName(domain)
-	if err == gorm.ErrRecordNotFound {
-		//new domain, save to database
-		d.Name = domain
-		err = proxyinabox.DB.Save(&d).Error
-		if err == nil {
-			//get a fresh proxy
-			p, err = proxyService.GetFree(nil)
-			if err == gorm.ErrRecordNotFound {
-				http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
-				return
-			}
-		}
-	} else if err == nil {
-		var as []proxyinabox.Activity
-		as, err = activityService.GetByDomainID(d.ID)
-		if err == nil && len(as) > 0 {
-			pids := make([]uint, 0)
-			for _, a := range as {
-				pids = append(pids, a.ProxyID)
-			}
-			p, err = proxyService.GetFree(pids)
-			if err == gorm.ErrRecordNotFound {
-				p, err = proxyService.GetFree(nil)
-			}
-		} else {
-			//get a fresh proxy
-			p, err = proxyService.GetFree(nil)
-			if err == gorm.ErrRecordNotFound {
-				http.Error(w, "padding add proxy", http.StatusServiceUnavailable)
-				return
-			}
-		}
-	}
-
+	// dispatch proxy
+	p, err := proxyinabox.CacheInstance.GetFreshProxy(domain)
 	if err != nil {
 		http.Error(w, "Unknown error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	go activityService.Save(d.ID, p.ID)
+	http.Error(w, p.IP, http.StatusOK)
+	return
 
 	fmt.Println(domain, "-->", p)
 
