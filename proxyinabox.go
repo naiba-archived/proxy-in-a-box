@@ -51,5 +51,5 @@ func Init() {
 		DB.LogMode(true)
 	}
 
-	DB.AutoMigrate(&Proxy{}, &Activity{}, &Domain{})
+	DB.AutoMigrate(&Proxy{}, &Domain{})
 }

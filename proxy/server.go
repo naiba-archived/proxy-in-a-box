@@ -9,18 +9,15 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/naiba/proxyinabox"
-	"github.com/naiba/proxyinabox/service/mysql"
 )
 
 var domainService proxyinabox.DomainService
-var activityService proxyinabox.ActivityService
 var proxyService proxyinabox.ProxyService
 
 //Serv serv the http proxy
 func Serv(httpPort, httpsPort string) {
 	//init service
 	domainService = &mysql.DomainService{DB: proxyinabox.DB}
-	activityService = &mysql.ActivityService{DB: proxyinabox.DB}
 	proxyService = &mysql.ProxyService{DB: proxyinabox.DB}
 
 	//start http proxy server

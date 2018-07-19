@@ -19,8 +19,6 @@ type Proxy struct {
 	Delay      int64
 	Usenum     int64
 	LastVerify time.Time
-
-	Activitys []Activity
 }
 
 func (p Proxy) String() string {
@@ -31,11 +29,4 @@ func (p Proxy) String() string {
 //ProxyCrawler proxy crawler
 type ProxyCrawler interface {
 	Fetch() error
-}
-
-//ProxyService proxy service
-type ProxyService interface {
-	GetByIP(ip string) (Proxy, error)
-	GetFree(notIn []uint) (Proxy, error)
-	GetUnVerified() ([]Proxy, error)
 }

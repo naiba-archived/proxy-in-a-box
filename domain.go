@@ -8,11 +8,4 @@ import (
 type Domain struct {
 	gorm.Model
 	Name string `gorm:"unique_index"`
-
-	Activitys []Activity
-}
-
-//DomainService domain service
-type DomainService interface {
-	GetByName(name string) (Domain, error)
 }
