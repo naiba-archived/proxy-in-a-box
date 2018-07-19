@@ -51,6 +51,7 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Naive", http.StatusForbidden)
 		return
 	}
+	r.Header.Del("Naiba")
 	//get user IP
 	var ip string
 	ipSlice := strings.Split(r.RemoteAddr, ":")
