@@ -78,9 +78,6 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Error(w, p.IP, http.StatusOK)
-	return
-
 	fmt.Println(domain, "-->", p)
 
 	if r.Method == http.MethodConnect {

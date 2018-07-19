@@ -19,7 +19,7 @@ type liveDomain struct {
 
 var cacheInstance *cache.Cache
 
-var liveDomains sync.Map //map[domain]liveDomain
+var liveDomains sync.Map //map[domain]*liveDomain
 
 var proxyCache sync.Map //map[id]*Proxy
 var proxyIndex sync.Map //map[string]id
@@ -101,6 +101,7 @@ func (c Caches) GetFreshProxy(domain string) (*Proxy, error) {
 			t, has := ld.(*liveDomain).proxies.Load(p)
 			if has && now-t.(int64) < 3 {
 				// proxy is juest used
+				fmt.Println("proxy is juest used", p, now, t)
 				continue
 			}
 		}
@@ -150,5 +151,33 @@ func (c Caches) DeleteProxy(p Proxy) (e error) {
 			return
 		}
 	}
+	fmt.Println("delete invalid proxy", p)
 	return
+}
+
+//clear unused cache
+func clearCacheWorker() {
+	go func() {
+		for {
+			clearItem := 0
+			now := time.Now().Unix()
+			liveDomains.Range(func(key, value interface{}) bool {
+				if now-value.(*liveDomain).lastActive > 3 {
+					liveDomains.Delete(key)
+					clearItem++
+				} else {
+					value.(*liveDomain).proxies.Range(func(k1, v1 interface{}) bool {
+						if now-v1.(int64) > 3 {
+							value.(*liveDomain).proxies.Delete(k1)
+							clearItem++
+						}
+						return true
+					})
+				}
+				return true
+			})
+			fmt.Println("clearCacheWorker", clearItem)
+			time.Sleep(time.Minute)
+		}
+	}()
 }

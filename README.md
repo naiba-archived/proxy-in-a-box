@@ -68,21 +68,22 @@ Server bandwidth and mysql configuration will affect the test results, mysql con
 Running 1m test @ http://127.0.0.1:8080
   30 threads and 30 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     2.25s     3.02s   20.56s    90.69%
-    Req/Sec     0.49      0.66     3.00     94.58%
-  203 requests in 1.00m, 3.62MB read
-  Non-2xx or 3xx responses: 7
-Requests/sec:      3.38
-Transfer/sec:     61.61KB
-~$ wrk -H "Naiba: lifelonglearning"  -t30 -c30 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
+    Latency     1.15s     2.76s   23.61s    88.89%
+    Req/Sec    14.17      8.69    30.00     70.42%
+  1058 requests in 1.00m, 487.21KB read
+  Socket errors: connect 0, read 7, write 0, timeout 10
+  Non-2xx or 3xx responses: 37
+Requests/sec:     17.61
+Transfer/sec:      8.11KB
+~$ wrk -H "Naiba: lifelonglearning"  -t50 -c50 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
 Running 1m test @ http://127.0.0.1:8080
-  30 threads and 30 connections
+  50 threads and 50 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     5.45s     5.81s   24.13s    82.58%
-    Req/Sec     0.96      1.85    10.00     77.78%
-  162 requests in 1.00m, 55.74KB read
-  Socket errors: connect 0, read 10, write 0, timeout 8
-  Non-2xx or 3xx responses: 36
-Requests/sec:      2.70
-Transfer/sec:      0.93KB
+    Latency     1.50s     3.44s   24.30s    88.89%
+    Req/Sec    13.01      9.95    30.00     58.77%
+  1050 requests in 1.00m, 500.08KB read
+  Socket errors: connect 0, read 15, write 0, timeout 15
+  Non-2xx or 3xx responses: 50
+Requests/sec:     17.47
+Transfer/sec:      8.32KB
 ```

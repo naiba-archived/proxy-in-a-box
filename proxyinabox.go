@@ -57,6 +57,7 @@ func Init() {
 	DB.AutoMigrate(&Proxy{})
 
 	loadCache()
+	clearCacheWorker()
 }
 
 func loadCache() {
