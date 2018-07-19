@@ -7,18 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
-	"github.com/naiba/proxyinabox/service/mysql"
 	"github.com/parnurzeal/gorequest"
 )
 
 var validateJobs chan proxyinabox.Proxy
 var pendingValidate sync.Map
-var proxyServiceInstance proxyinabox.ProxyService
 
 type validateJSON struct {
 	IP       string
@@ -32,9 +28,7 @@ type validateJSON struct {
 	}
 }
 
-//InitCrawlerWorker init crawler
-func InitCrawlerWorker(d *gorm.DB) {
-	proxyServiceInstance = &mysql.ProxyService{DB: d}
+func init() {
 	validateJobs = make(chan proxyinabox.Proxy, proxyinabox.Config.Sys.ProxyVerifyWorker*2)
 	//start worker
 	for i := 1; i <= proxyinabox.Config.Sys.ProxyVerifyWorker; i++ {
@@ -77,12 +71,11 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 	for p := range validateJobs {
 		// format
 		p.IP = strings.TrimSpace(p.IP)
-		var proxy string
-		proxy = "http://" + p.IP + ":" + p.Port
+		proxy := p.URI()
 		// is processing
 		_, has := pendingValidate.Load(proxy)
-		_, err := proxyServiceInstance.GetByIP(p.IP)
-		if !has && err != nil {
+		_, has2 := proxyinabox.CacheInstance.GetProxyByURI(proxy)
+		if !has && !has2 {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
 			start := time.Now().Unix()
@@ -99,8 +92,11 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.Delay = time.Now().Unix() - start
 				p.LastVerify = time.Now()
 
-				proxyinabox.DB.Save(&p)
-				fmt.Println("worker", id, "find a available proxy", p)
+				if e := proxyinabox.CacheInstance.SaveProxy(p); e != nil {
+					fmt.Println("worker", id, "find a available proxy", p)
+				} else {
+					fmt.Println("worker", id, "error save proxy", e.Error())
+				}
 			}
 			pendingValidate.Delete(proxy)
 		}

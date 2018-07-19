@@ -17,13 +17,17 @@ type Proxy struct {
 	Platform   int
 	NotHTTPS   bool
 	Delay      int64
-	Usenum     int64
 	LastVerify time.Time
 }
 
 func (p Proxy) String() string {
-	return fmt.Sprintf("[√]proxy#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d useNum:%d platform:%d]",
-		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Usenum, p.Platform)
+	return fmt.Sprintf("[√]proxy#[id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d platform:%d]",
+		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Platform)
+}
+
+//URI get uri
+func (p Proxy) URI() string {
+	return "http://" + p.IP + ":" + p.Port
 }
 
 //ProxyCrawler proxy crawler
