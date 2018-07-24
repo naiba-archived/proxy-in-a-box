@@ -19,19 +19,25 @@ Flags:
 
 ## Usage
 1. get lastest Proxy-in-a-Box
-    ```
+    ```shell
     go get -u -v github.com/naiba/proxyinabox/cmd/proxy-in-a-box/...
     ```
-2. enter the application directory
+2. gen tls cert
+    ```shell
+    cd $GOPATH/src/github.com/naiba/proxyinabox/cmd/proxy-in-a-box/
+    ./gen_cert.sh
+    mv server.* $GOPATH/bin
     ```
+3. enter the application directory
+    ```shell
     cd $GOPATH/bin
     ```
-3. write config file #Config
-4. run it
-    ```
+4. write config file #Config
+5. run it
+    ```shell
     ./proxy-in-a-box
     ```
-5. configured in your code
+6. configured in your code
     ```
     HTTP proxy: `http://[IP]:8080`
     HTTPS proxy: `https://[IP]:8081`
