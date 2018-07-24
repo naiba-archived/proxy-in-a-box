@@ -109,6 +109,12 @@ func (c TCache) HasProxy(ip string) bool {
 }
 
 //SaveProxy save proxy
-func (c TCache) SaveProxy(p Proxy) {
+func (c TCache) SaveProxy(p Proxy) error {
+	//TODO:save proxy
+	return nil
+}
 
+//DeleteProxy save proxy
+func (c TCache) DeleteProxy(p Proxy) {
+	//TODO:save proxy
 }

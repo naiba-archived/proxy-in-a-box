@@ -42,7 +42,7 @@ func getDelay(pc chan proxyinabox.Proxy) {
 		_, _, errs := gorequest.New().Timeout(time.Second*5).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
 		delay := time.Now().Unix() - start
 		if len(errs) != 0 || resp.IP != p.IP {
-			proxyinabox.CacheInstance.DeleteProxy(p)
+			proxyinabox.CI.DeleteProxy(p)
 			continue
 		}
 		proxyinabox.DB.Model(&p).Update("delay", delay)

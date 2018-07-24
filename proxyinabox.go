@@ -66,4 +66,5 @@ func Init() {
 func loadCache() {
 	var ps []Proxy
 	DB.Model(&Proxy{}).Find(&ps)
+	//TODO: load cache
 }
