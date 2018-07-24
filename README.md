@@ -1,9 +1,11 @@
 # Proxy-in-a-Box
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/naiba/proxyinabox)](https://goreportcard.com/report/github.com/naiba/proxyinabox) [![travis](https://travis-ci.com/naiba/proxyinabox.svg?branch=master)](https://travis-ci.com/naiba/proxyinabox)
 
 Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
 
 ![proxyinabox](https://www.lifelonglearning.cc/usr/uploads/2018/07/3288933021.png)
+
 ```shell
 Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
 
@@ -18,6 +20,7 @@ Flags:
 ```
 
 ## Usage
+
 1. get lastest Proxy-in-a-Box
     ```shell
     go get -u -v github.com/naiba/proxyinabox/cmd/proxy-in-a-box/...
@@ -38,7 +41,7 @@ Flags:
     ./proxy-in-a-box
     ```
 6. configured in your code
-    ```
+    ```none
     HTTP proxy: `http://[IP]:8080`
     HTTPS proxy: `https://[IP]:8081`
     * Please set http header when requesting: "Naiba: lifelonglearning" ref:https://github.com/naiba/proxyinabox/blob/master/cmd/proxy-in-a-box/test_server.sh
@@ -46,6 +49,7 @@ Flags:
     Set in the code, and then grab it, the **Proxy-in-a-Box** will automatically assign the proxy.
 
 ## Config
+
 ```yaml
 # run in debug mode
 debug: true
@@ -76,7 +80,9 @@ sys:
 ```
 
 ## Benchmark
+
 Server bandwidth and mysql configuration will affect the test results, mysql configuration affects the scheduling of the agent.
+
 ```shell
 ~$ wrk -H "Naiba: lifelonglearning"  -t30 -c30 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
 Running 1m test @ http://127.0.0.1:8080
