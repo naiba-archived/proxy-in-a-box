@@ -5,14 +5,12 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/go-redis/redis"
 	// mysql driver for GORM
 	_ "github.com/go-sql-driver/mysql"
 )
 
 //DB instance
 var DB *gorm.DB
-var Cache *redis.Client
 
 //Conf config struct
 type Conf struct {
@@ -60,19 +58,11 @@ func Init() {
 
 	DB.AutoMigrate(&Proxy{})
 
+	initRedis()
 	loadCache()
-	clearCacheWorker()
 }
 
 func loadCache() {
 	var ps []Proxy
 	DB.Model(&Proxy{}).Find(&ps)
-	proxyQueue.mu.Lock()
-	defer proxyQueue.mu.Unlock()
-	for _, p := range ps {
-		tmp := p
-		proxyQueue.list = append(proxyQueue.list, p.ID)
-		proxyCache.Store(p.ID, &tmp)
-		proxyIndex.Store(p.URI(), p.ID)
-	}
 }
