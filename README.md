@@ -73,7 +73,7 @@ sys:
   proxy_verify_worker: 20
   # how many domains can request per ip in 30min
   domains_per_ip: 30
-  # how many request can do per ip in 1min
+  # how many request can do per ip in 1s
   request_limit_per_ip: 500
   # verify interval of the proxy stored in the database
   verify_duration: 30
