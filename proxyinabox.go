@@ -3,6 +3,8 @@ package proxyinabox
 import (
 	"fmt"
 
+	"github.com/go-redis/redis"
+
 	"github.com/jinzhu/gorm"
 
 	// mysql driver for GORM
@@ -66,5 +68,9 @@ func Init() {
 func loadCache() {
 	var ps []Proxy
 	DB.Model(&Proxy{}).Find(&ps)
-	//TODO: load cache
+	for _, p := range ps {
+		cache.ZAdd("ppc", redis.Z{Member: string(p.ID)})
+		cache.HSet("ppi", string(p.ID), fmt.Sprintf("%s:%s", p.IP, p.Port))
+		cache.HSet("ppr", fmt.Sprintf("%s:%s", p.IP, p.Port), p.ID)
+	}
 }

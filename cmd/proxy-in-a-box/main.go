@@ -27,7 +27,7 @@ var rootCmd = &cobra.Command{
 		proxy.Serv(httpProxyPort, httpsProxyPort)
 
 		crawler.FetchProxies()
-		//crawler.Verify()
+		crawler.Verify()
 
 		c := cron.New()
 		c.AddFunc("@daily", crawler.FetchProxies)

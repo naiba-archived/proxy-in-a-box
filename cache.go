@@ -2,7 +2,7 @@ package proxyinabox
 
 import (
 	"errors"
-	"strings"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -30,91 +30,80 @@ func initRedis() {
 //PickProxy get a fresh proxy
 func (c TCache) PickProxy(host string) (string, error) {
 	var p string
-	var err error
-	cache.Pipelined(func(pipe redis.Pipeliner) error {
-		var ps []string
-		ps, err = pipe.Sort("ppc-*", &redis.Sort{Order: "ASC", Count: 10}).Result()
-		if err != nil || len(ps) < 1 {
-			err = errors.New("Proxy IP is not in stock")
-			return nil
-		}
-		for i := 0; i < len(ps); i++ {
-			//find in liveDomains
-			ldkey := "ld-" + host + ps[i]
-			if pipe.Get(ldkey).Err() == nil {
-				//pick proxy ID
-				ps = strings.Split(ps[i], "-")
-				if len(ps) != 2 {
-					err = errors.New("Unable to resolve proxy")
-					return nil
-				}
-				//get proxy
-				p, _ = pipe.HGet("ppi", ps[1]).Result()
-				//set used
-				pipe.Set(ldkey, nil, time.Second*3)
-				//update proxy used time
-				pipe.Incr("ppc-" + ps[1])
-				break
-			}
-		}
-		return nil
-	})
-	if len(p) == 0 {
-		err = errors.New("Proxy IP pool is too busy")
+	var ps []string
+
+	ps = cache.ZRange("ppc", 0, 10).Val()
+	if len(ps) < 1 {
+		return "", errors.New("Proxy IP is not in stock")
 	}
-	return p, err
+	for i := 0; i < len(ps); i++ {
+		//find in liveDomains
+		ldkey := "ld" + host + ps[i]
+
+		if cache.Get(ldkey).Err() == redis.Nil {
+			//set used
+			cache.Set(ldkey, nil, time.Second*3)
+			//update proxy used time
+			cache.ZIncr("ppc", redis.Z{Score: 1, Member: ps[1]})
+			//get proxy
+			p = cache.HGet("ppi", ps[i]).Val()
+			break
+		}
+	}
+	if len(p) == 0 {
+		return "", errors.New("Proxy IP pool is too busy")
+	}
+	return p, nil
 }
 
 //IPLimiter limit ip
 func (c TCache) IPLimiter(ip string) bool {
-	var key = "ipl-" + ip
+	var key = "ipl" + ip
 	var count int64
-	var err error
-	cache.Pipelined(func(pipe redis.Pipeliner) error {
-		count, err = pipe.Incr(key).Result()
-		if err != nil {
-			pipe.Set(key, 1, time.Second).Err()
-			return nil
-		}
-		pipe.Expire(key, time.Second)
-		return nil
-	})
+	cache.Expire(key, time.Second)
+	count = cache.Incr(key).Val()
 	return count <= Config.Sys.RequestLimitPerIP
 }
 
 //HostLimiter host limiter
 func (c TCache) HostLimiter(ip, host string) bool {
-	var key = "hl-" + ip
+	var key = "hl" + ip
 	count := 0
-	cache.Pipelined(func(pipe redis.Pipeliner) error {
-		now := time.Now().Unix()
-		pipe.HSet(key, host, now)
-		pipe.Expire(key, time.Minute*30)
-		for _, h := range pipe.HKeys(key).Val() {
-			last, _ := pipe.HGet(key, h).Int64()
-			if now-last < 60*60*30 {
-				count++
-			} else {
-				pipe.HDel(key, h)
-			}
+	now := time.Now().Unix()
+	cache.HSet(key, host, now)
+	cache.Expire(key, time.Minute*30)
+	for _, h := range cache.HKeys(key).Val() {
+		last, _ := cache.HGet(key, h).Int64()
+		if now-last < 60*60*30 {
+			count++
+		} else {
+			cache.HDel(key, h)
 		}
-		return nil
-	})
-	return count <= 10
+	}
+	return count <= Config.Sys.DomainsPerIP
 }
 
 //HasProxy has proxy
-func (c TCache) HasProxy(ip string) bool {
-	return DB.Model(&Proxy{}).Where("ip = ?", ip).First(&Proxy{}) == nil
+func (c TCache) HasProxy(p string) bool {
+	return cache.HGet("ppr", p).Err() == nil
 }
 
 //SaveProxy save proxy
 func (c TCache) SaveProxy(p Proxy) error {
-	//TODO:save proxy
+	DB.Save(&p)
+	cache.ZAdd("ppc", redis.Z{Member: p.ID})
+	cache.HSet("ppi", string(p.ID), fmt.Sprintf("%s:%s", p.IP, p.Port))
+	cache.HSet("ppr", fmt.Sprintf("%s:%s", p.IP, p.Port), p.ID)
 	return nil
 }
 
 //DeleteProxy save proxy
 func (c TCache) DeleteProxy(p Proxy) {
-	//TODO:save proxy
+	if p.ID > 0 {
+		cache.ZRem("ppc", redis.Z{Member: p.ID})
+		cache.HDel("ppi", string(p.ID))
+		cache.HDel("ppr", fmt.Sprintf("%s:%s", p.IP, p.Port))
+
+		DB.Delete(&p)
+	}
 }

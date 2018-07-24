@@ -74,7 +74,7 @@ sys:
   # how many domains can request per ip in 30min
   domains_per_ip: 30
   # how many request can do per ip in 1s
-  request_limit_per_ip: 500
+  request_limit_per_ip: 10
   # verify interval of the proxy stored in the database
   verify_duration: 30
 ```
