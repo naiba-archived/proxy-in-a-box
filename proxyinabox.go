@@ -17,7 +17,7 @@ var DB *gorm.DB
 //Conf config struct
 type Conf struct {
 	Debug bool
-	DB    struct {
+	MySQL struct {
 		Host   string
 		Port   string
 		User   string
@@ -42,9 +42,8 @@ func Init() {
 		panic("proxy verify duration (must >5 minute)")
 	}
 
-	// in-memory db "mode=memory"
 	var err error
-	DB, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/proxy?charset=utf8mb4&parseTime=True&loc=Local")
+	DB, err = gorm.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Dbname+"?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println("DB!!!", err.Error())
 		panic("failed to connect database")
