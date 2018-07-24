@@ -45,7 +45,6 @@ func getDelay(pc chan proxyinabox.Proxy) {
 			proxyinabox.CacheInstance.DeleteProxy(p)
 			continue
 		}
-		p.Delay = delay
-		proxyinabox.DB.Update(&p)
+		proxyinabox.DB.Model(&p).Update("delay", delay)
 	}
 }

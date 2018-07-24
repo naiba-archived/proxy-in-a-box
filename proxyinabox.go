@@ -32,7 +32,7 @@ type Conf struct {
 		Name              string
 		ProxyVerifyWorker int   `mapstructure:"proxy_verify_worker"`
 		DomainsPerIP      int   `mapstructure:"domains_per_ip"`
-		RequestLimitPerIP int32 `mapstructure:"request_limit_per_ip"`
+		RequestLimitPerIP int64 `mapstructure:"request_limit_per_ip"`
 		VerifyDuration    int   `mapstructure:"verify_duration"`
 	}
 }

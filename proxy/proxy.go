@@ -6,13 +6,11 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/naiba/proxyinabox"
 )
 
-func handleTunneling(proxy *proxyinabox.Proxy, w http.ResponseWriter, r *http.Request) {
+func handleTunneling(proxy string, w http.ResponseWriter, r *http.Request) {
 	//set proxy
-	destConn, err := net.DialTimeout("tcp", proxy.IP+":"+proxy.Port, 10*time.Second)
+	destConn, err := net.DialTimeout("tcp", proxy, 10*time.Second)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
@@ -37,9 +35,9 @@ func transfer(destination io.WriteCloser, source io.ReadCloser) {
 	defer source.Close()
 	io.Copy(destination, source)
 }
-func handleHTTP(proxy *proxyinabox.Proxy, w http.ResponseWriter, req *http.Request) {
+func handleHTTP(proxy string, w http.ResponseWriter, req *http.Request) {
 	//set proxy
-	p, _ := url.Parse("http://" + proxy.IP + ":" + proxy.Port)
+	p, _ := url.Parse("http://" + proxy)
 	tp := &http.Transport{
 		Proxy: http.ProxyURL(p),
 		DialContext: (&net.Dialer{

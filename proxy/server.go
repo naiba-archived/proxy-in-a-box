@@ -56,14 +56,14 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		ip = "Unknown"
 	}
 	//check request limit
-	if !proxyinabox.CacheInstance.CheckIPLimit(ip) {
+	if !proxyinabox.CI.IPLimiter(ip) {
 		fmt.Println("[x] ip request limited", ip)
-		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.Config.Sys.RequestLimitPerIP)+" requests at one minute per IP.["+ip+"]", http.StatusForbidden)
+		http.Error(w, "The request exceeds the limit, and up to "+fmt.Sprintf("%d", proxyinabox.Config.Sys.RequestLimitPerIP)+" requests at one second per IP.["+ip+"]", http.StatusForbidden)
 		return
 	}
 	//check domain limit
 	var domain = r.URL.Hostname()
-	if !proxyinabox.CacheInstance.CheckIPDomain(ip, domain) {
+	if !proxyinabox.CI.HostLimiter(ip, domain) {
 		fmt.Println("[x] ip domain limited", ip)
 		http.Error(w, "The request exceeds the limit, and up to "+strconv.Itoa(proxyinabox.Config.Sys.DomainsPerIP)+" domain names are crawled every half hour per IP.["+ip+"]", http.StatusForbidden)
 		return
@@ -72,7 +72,7 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("X-Powered-By", "Naiba")
 
 	// dispatch proxy
-	p, err := proxyinabox.CacheInstance.GetFreshProxy(domain)
+	p, err := proxyinabox.CI.PickProxy(domain)
 	if err != nil {
 		http.Error(w, "Unknown error: "+err.Error(), http.StatusInternalServerError)
 		return
