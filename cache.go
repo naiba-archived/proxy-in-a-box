@@ -33,21 +33,27 @@ func (c TCache) PickProxy(host string) (string, error) {
 	var err error
 	cache.Pipelined(func(pipe redis.Pipeliner) error {
 		var ps []string
-		ps, err = pipe.Sort("pp-*", &redis.Sort{Order: "ASC", Count: 10}).Result()
+		ps, err = pipe.Sort("ppc-*", &redis.Sort{Order: "ASC", Count: 10}).Result()
 		if err != nil || len(ps) < 1 {
 			err = errors.New("Proxy IP is not in stock")
 			return nil
 		}
 		for i := 0; i < len(ps); i++ {
+			//find in liveDomains
 			ldkey := "ld-" + host + ps[i]
 			if pipe.Get(ldkey).Err() == nil {
-				pipe.Set(ldkey, nil, time.Second*3)
+				//pick proxy ID
 				ps = strings.Split(ps[i], "-")
-				if len(ps) != 3 {
+				if len(ps) != 2 {
 					err = errors.New("Unable to resolve proxy")
 					return nil
 				}
-				p = ps[1] + ":" + ps[2]
+				//get proxy
+				p, _ = pipe.HGet("ppi", ps[1]).Result()
+				//set used
+				pipe.Set(ldkey, nil, time.Second*3)
+				//update proxy used time
+				pipe.Incr("ppc-" + ps[1])
 				break
 			}
 		}
@@ -95,4 +101,14 @@ func (c TCache) HostLimiter(ip, host string) bool {
 		return nil
 	})
 	return count <= 10
+}
+
+//HasProxy has proxy
+func (c TCache) HasProxy(ip string) bool {
+	return DB.Model(&Proxy{}).Where("ip = ?", ip).First(&Proxy{}) == nil
+}
+
+//SaveProxy save proxy
+func (c TCache) SaveProxy(p Proxy) {
+
 }

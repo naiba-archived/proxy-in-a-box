@@ -74,8 +74,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 		proxy := p.URI()
 		// is processing
 		_, has := pendingValidate.Load(proxy)
-		_, has2 := proxyinabox.CacheInstance.GetProxyIDByURI(proxy)
-		if !has && !has2 {
+		if !has && !proxyinabox.CI.HasProxy(p.IP) {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
 			start := time.Now().Unix()
