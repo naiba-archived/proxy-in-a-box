@@ -2,17 +2,17 @@ package proxyinabox
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jinzhu/gorm"
-	cache "github.com/patrickmn/go-cache"
 
+	"github.com/go-redis/redis"
 	// mysql driver for GORM
 	_ "github.com/go-sql-driver/mysql"
 )
 
 //DB instance
 var DB *gorm.DB
+var Cache *redis.Client
 
 //Conf config struct
 type Conf struct {
@@ -23,6 +23,11 @@ type Conf struct {
 		User   string
 		Pass   string
 		Dbname string
+	} `mapstructure:"mysql"`
+	Redis struct {
+		Host string
+		Port string
+		Db   int
 	}
 	Sys struct {
 		Name              string
@@ -60,7 +65,6 @@ func Init() {
 }
 
 func loadCache() {
-	cacheInstance = cache.New(time.Minute*5, time.Minute)
 	var ps []Proxy
 	DB.Model(&Proxy{}).Find(&ps)
 	proxyQueue.mu.Lock()
