@@ -48,14 +48,20 @@ Flags:
 ## Config
 ```yaml
 # run in debug mode
-debug: false
-# database config
-db:
+debug: true
+# mysql config
+mysql:
   host: 127.0.0.1
   port: 3306
   user: root
   pass: 123456
   dbname: proxy
+# redis config
+redis:
+  host: 127.0.0.1
+  port: 6379
+  pass: ""
+  db: 0
 # system config
 sys:
   name: Naiba
@@ -64,7 +70,7 @@ sys:
   # how many domains can request per ip in 30min
   domains_per_ip: 30
   # how many request can do per ip in 1min
-  request_limit_per_ip: 420
+  request_limit_per_ip: 500
   # verify interval of the proxy stored in the database
   verify_duration: 30
 ```
