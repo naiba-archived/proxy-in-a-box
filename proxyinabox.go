@@ -25,6 +25,7 @@ type Conf struct {
 	Redis struct {
 		Host string
 		Port string
+		Pass string
 		Db   int
 	}
 	Sys struct {
