@@ -23,7 +23,7 @@ func main() {
 			CertFile:       "server.pem",
 		},
 
-		IsDirect: true,
+		IsDirect: false,
 		Scheduler: func(r *http.Request) (string, error) {
 			return "127.0.0.1:1087", nil
 		},

@@ -33,22 +33,36 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request, https bool) {
 		fmt.Println("hijack error:", err)
 	}
 	defer connIn.Close()
-
+	var host string
 	var respOut *http.Response
-	host := req.Host
-	if !strings.Contains(host, ":") {
-		if https {
-			host += ":443"
-		} else {
-			host += ":80"
-		}
-	}
-
 	var connOut net.Conn
-	if !https {
-		connOut, err = net.DialTimeout("tcp", host, time.Second*30)
+	if m.IsDirect {
+		host = req.Host
+		if !strings.Contains(host, ":") {
+			if https {
+				host += ":443"
+			} else {
+				host += ":80"
+			}
+		}
+		if !https {
+			connOut, err = net.DialTimeout("tcp", host, time.Second*30)
+		} else {
+			connOut, err = tls.Dial("tcp", host, m.TLSConf.ServerTLSConfig)
+		}
 	} else {
-		connOut, err = tls.Dial("tcp", host, m.TLSConf.ServerTLSConfig)
+		host, err = m.Scheduler(req)
+		if err != nil {
+			fmt.Println("prxy scheduler error", err)
+			return
+		}
+		connOut, err = net.DialTimeout("tcp", host, time.Second*30)
+		if https && err == nil {
+			connOut.Write([]byte("CONNECT " + req.Host + " HTTP/1.1\r\n\r\n"))
+			b := make([]byte, 1000)
+			connOut.Read(b)
+			fmt.Println(string(b))
+		}
 	}
 	if err != nil {
 		fmt.Println("tls dial to", host, "error:", err)
@@ -56,7 +70,12 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request, https bool) {
 	}
 	defer connOut.Close()
 
-	if err = req.Write(connOut); err != nil {
+	if m.IsDirect {
+		err = req.Write(connOut)
+	} else {
+		err = req.WriteProxy(connOut)
+	}
+	if err != nil {
 		fmt.Println("send to server error", err)
 		return
 	}
