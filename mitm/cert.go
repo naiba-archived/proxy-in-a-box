@@ -48,7 +48,6 @@ func (m *MITM) GenerateCertForClient() error {
 func (m *MITM) FakeCert(domain string) (*tls.Certificate, error) {
 	cert, has := m.cache.Get("DC" + domain)
 	if has {
-		fmt.Println("CertCache:", domain)
 		return cert.(*tls.Certificate), nil
 	}
 

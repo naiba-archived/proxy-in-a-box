@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"time"
 )
 
@@ -34,13 +35,20 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request, https bool) {
 	defer connIn.Close()
 
 	var respOut *http.Response
-	host := req.Host
+	host := []byte(req.Host)
+	if !strings.Contains(req.Host, ":") {
+		if https {
+			host = append(host, []byte(":443")...)
+		} else {
+			host = append(host, []byte(":80")...)
+		}
+	}
 
 	var connOut net.Conn
 	if !https {
-		connOut, err = net.DialTimeout("tcp", host, time.Second*30)
+		connOut, err = net.DialTimeout("tcp", string(host), time.Second*30)
 	} else {
-		connOut, err = tls.Dial("tcp", host, m.TLSConf.ServerTLSConfig)
+		connOut, err = tls.Dial("tcp", string(host), m.TLSConf.ServerTLSConfig)
 	}
 	if err != nil {
 		fmt.Println("tls dial to", host, "error:", err)
