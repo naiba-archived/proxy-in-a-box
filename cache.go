@@ -3,6 +3,7 @@ package proxyinabox
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -28,9 +29,10 @@ func initRedis() {
 }
 
 //PickProxy get a fresh proxy
-func (c TCache) PickProxy(host string) (string, error) {
+func (c TCache) PickProxy(req *http.Request) (string, error) {
 	var p string
 	var ps []string
+	host := req.Host
 
 	ps = cache.ZRange("ppc", 0, 10).Val()
 	if len(ps) < 1 {

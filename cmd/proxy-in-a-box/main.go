@@ -1,9 +1,12 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/naiba/proxyinabox/mitm"
 
 	"github.com/naiba/com"
 
@@ -13,10 +16,10 @@ import (
 
 	"github.com/naiba/proxyinabox"
 	"github.com/naiba/proxyinabox/crawler"
-	"github.com/naiba/proxyinabox/proxy"
 )
 
-var configFilePath, httpProxyPort, httpsProxyPort string
+var configFilePath, httpProxyAddr, httpsProxyAddr string
+var m *mitm.MITM
 var rootCmd = &cobra.Command{
 	Use:   "proxy-in-a-box",
 	Short: "Proxy-in-a-Box provide many proxies.",
@@ -24,7 +27,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[Proxy-in-a-Box]", proxyinabox.Config.Sys.Name, "v1.0.0")
 
-		proxy.Serv(httpProxyPort, httpsProxyPort)
+		m.ServeHTTP()
 
 		crawler.FetchProxies()
 		crawler.Verify()
@@ -40,8 +43,8 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&configFilePath, "conf", "c", "./pb.yaml", "config file")
-	rootCmd.PersistentFlags().StringVarP(&httpProxyPort, "hp", "p", "8080", "http proxy server port")
-	rootCmd.PersistentFlags().StringVarP(&httpsProxyPort, "sp", "s", "8081", "https proxy server port")
+	rootCmd.PersistentFlags().StringVarP(&httpProxyAddr, "ha", "p", "127.0.0.1:8080", "http proxy server port")
+	rootCmd.PersistentFlags().StringVarP(&httpsProxyAddr, "sa", "s", "127.0.0.1:8081", "https proxy server port")
 	//read config
 	viper.SetConfigType("yaml")
 	viper.SetConfigFile(configFilePath)
@@ -50,6 +53,25 @@ func init() {
 
 	proxyinabox.Init()
 	crawler.Init()
+
+	m = &mitm.MITM{
+		ListenHTTPS: true,
+		HTTPAddr:    httpProxyAddr,
+		HTTPSAddr:   httpsProxyAddr,
+		TLSConf: &struct {
+			PrivateKeyFile  string
+			CertFile        string
+			Organization    string
+			CommonName      string
+			ServerTLSConfig *tls.Config
+		}{
+			PrivateKeyFile: "server.key",
+			CertFile:       "server.pem",
+		},
+		IsDirect:  false,
+		Scheduler: proxyinabox.CI.PickProxy,
+	}
+	m.Init()
 }
 
 func main() {
