@@ -20,6 +20,78 @@
   version = "v1.4.7"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/getlantern/byteexec"
+  packages = ["."]
+  revision = "4cfb26ec74f460fda433dc06fddfbad7ddee3072"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/context"
+  packages = ["."]
+  revision = "624d99b1798d7c5375ea1d3ca4c5b04d58f7c775"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/elevate"
+  packages = [
+    ".",
+    "bin"
+  ]
+  revision = "c2e2e4901072d1f7e9f525426735acfab5fd9cdd"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/errors"
+  packages = ["."]
+  revision = "e9c0296368b736086adb20832549567064224854"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/filepersist"
+  packages = ["."]
+  revision = "c5f0cd24e7991579ba6f5f1bd20a1ad2c9f06cd4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/golog"
+  packages = ["."]
+  revision = "cca714f7feb5df8e455f409b549d384441ac4578"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/hex"
+  packages = ["."]
+  revision = "083fba3033ad473db3dd31c9bb368473d37581a7"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/hidden"
+  packages = ["."]
+  revision = "d52a649ab33af200943bb599898dbdcfdbc94cb7"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/keyman"
+  packages = [
+    ".",
+    "certimporter"
+  ]
+  revision = "f55e7280e93a8802a175e9c4beccad873f3fdf43"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/getlantern/ops"
+  packages = ["."]
+  revision = "37353306c90844c8e0591956f56611f46299d202"
+
+[[projects]]
+  name = "github.com/getlantern/stack"
+  packages = ["."]
+  revision = "02f928aad224fbccd50d66edd776fc9d1e9f2f2b"
+  version = "1.5.1"
+
+[[projects]]
   name = "github.com/go-redis/redis"
   packages = [
     ".",
@@ -100,10 +172,22 @@
   revision = "f0819c626f2f74027a7fa423bc28f7f66fbd4a68"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/oxtoacart/bpool"
+  packages = ["."]
+  revision = "4e1c5567d7c2dd59fa4c7c83d34c2f3528b025d6"
+
+[[projects]]
   name = "github.com/parnurzeal/gorequest"
   packages = ["."]
   revision = "a578a48e8d6ca8b01a3b18314c43c6716bb5f5a3"
   version = "v0.2.15"
+
+[[projects]]
+  name = "github.com/patrickmn/go-cache"
+  packages = ["."]
+  revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
+  version = "v2.1.0"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -221,6 +305,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1a631de92372bcb5a6088113e971fb6d044412e32b4a3fdc3f1938922446b65e"
+  inputs-digest = "c9f413374afc816c5afebeb7e4dd94f1d2b6d8d8bf635faf4286f9889faeff43"
   solver-name = "gps-cdcl"
   solver-version = 1
