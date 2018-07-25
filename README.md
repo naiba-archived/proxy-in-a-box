@@ -4,19 +4,15 @@
 
 Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
 
-![proxyinabox](https://www.lifelonglearning.cc/usr/uploads/2018/07/3288933021.png)
-
 ```shell
-Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.
-
 Usage:
   proxy-in-a-box [flags]
 
 Flags:
   -c, --conf string   config file (default "./pb.yaml")
   -h, --help          help for proxy-in-a-box
-  -p, --hp string     http proxy server port (default "8080")
-  -s, --sp string     https proxy server port (default "8081")
+  -p, --ha string     http proxy server addr (default "8080")
+  -s, --sa string     https proxy server addr (default "8081")
 ```
 
 ## Usage
@@ -25,22 +21,16 @@ Flags:
     ```shell
     go get -u -v github.com/naiba/proxyinabox/cmd/proxy-in-a-box/...
     ```
-2. gen tls cert
-    ```shell
-    cd $GOPATH/src/github.com/naiba/proxyinabox/cmd/proxy-in-a-box/
-    ./gen_cert.sh
-    mv server.* $GOPATH/bin
-    ```
-3. enter the application directory
+2. enter the application directory
     ```shell
     cd $GOPATH/bin
     ```
-4. write config file #Config
-5. run it
+3. write config file #Config
+4. run it
     ```shell
     ./proxy-in-a-box
     ```
-6. configured in your code
+5. configured in your code
     ```none
     HTTP proxy: `http://[IP]:8080`
     HTTPS proxy: `https://[IP]:8081`
