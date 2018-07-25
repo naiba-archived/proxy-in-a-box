@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"net/http"
 
 	"github.com/naiba/proxyinabox/mitm"
 )
@@ -23,6 +24,9 @@ func main() {
 		},
 
 		IsDirect: true,
+		Scheduler: func(r *http.Request) (string, error) {
+			return "127.0.0.1:1087", nil
+		},
 	}
 	m.Init()
 	m.ServeHTTP()
