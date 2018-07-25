@@ -120,7 +120,7 @@ func (m *MITM) serve(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodConnect {
 		m.injectHTTPS(w, r)
 	} else {
-		m.Dump(w, r, false)
+		m.Dump(w, r)
 	}
 }
 
@@ -149,7 +149,7 @@ func (m *MITM) injectHTTPS(resp http.ResponseWriter, req *http.Request) {
 	handler := http.HandlerFunc(func(resp2 http.ResponseWriter, req2 *http.Request) {
 		req2.URL.Scheme = "https"
 		req2.URL.Host = req2.Host
-		m.Dump(resp2, req2, true)
+		m.Dump(resp2, req2)
 	})
 
 	go func() {

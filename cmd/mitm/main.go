@@ -22,8 +22,7 @@ func main() {
 			PrivateKeyFile: "server.key",
 			CertFile:       "server.pem",
 		},
-
-		IsDirect: false,
+		IsDirect: true,
 		Scheduler: func(r *http.Request) (string, error) {
 			return "127.0.0.1:1087", nil
 		},
