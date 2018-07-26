@@ -18,7 +18,6 @@ import (
 type proxyEntry struct {
 	p *proxyinabox.Proxy
 	n int64
-	l sync.Mutex
 }
 
 type sortableProxyList []*proxyEntry
@@ -36,8 +35,9 @@ func (p sortableProxyList) Less(i, j int) bool {
 }
 
 type proxyList struct {
-	l  sync.Mutex
-	pl []*proxyEntry
+	l     sync.Mutex
+	pl    []*proxyEntry
+	index map[string]struct{}
 }
 
 /*
@@ -52,11 +52,10 @@ type domainScheduling struct {
 
 /*
 ==============
-   IP计数池
+   IP限流池
 ==============
 */
 type ipActivityEntry struct {
-	l          sync.Mutex
 	lastActive int64
 	num        int64
 }
@@ -65,14 +64,37 @@ type ipActivity struct {
 	list map[string]*ipActivityEntry
 }
 
-//MemCache memory cache
-type MemCache struct {
-	proxies *proxyList
-	domains *domainScheduling
-	ips     *ipActivity
+/*
+==============
+   域名限流池
+==============
+*/
+type domainActivityEntry struct {
+	activity map[string]struct{}
+}
+type domainActivity struct {
+	domains *domainActivityEntry
+	last    int64
+}
+type domainActivityList struct {
+	l    sync.Mutex
+	list map[string]*domainActivity
 }
 
-//TODO:new MemCache
+//MemCache memory cache
+type MemCache struct {
+	proxies     *proxyList
+	domains     *domainScheduling
+	ips         *ipActivity
+	domainLimit *domainActivityList
+}
+
+/*
+TODO:
+1. new MemCache
+2. domains 列表回收
+3. ips 列表回收
+*/
 
 //PickProxy rt
 func (c *MemCache) PickProxy(req *http.Request) (string, error) {
@@ -86,8 +108,9 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 	if length == 0 {
 		return "", fmt.Errorf("%s", "There is no proxy in the proxy pool.")
 	}
-	sort.Sort(sortableProxyList(c.proxies.pl))
+
 	candidate = make(map[string]struct{})
+	sort.Sort(sortableProxyList(c.proxies.pl))
 	c.domains.l.Lock()
 	defer c.domains.l.Unlock()
 	if pl, has := c.domains.dl[domain]; has {
@@ -97,9 +120,7 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 
 		//清理长久未活动的代理
 		for i, p := range pl.pl {
-			p.l.Lock()
-			defer p.l.Unlock()
-			if p.n-now < 3 {
+			if now-p.n < 3 {
 				candidate[p.p.IP] = struct{}{}
 			} else {
 				pl.pl = append(pl.pl[:i], pl.pl[i+1:]...)
@@ -108,6 +129,7 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 	}
 
 	for i := 0; i < length; i++ {
+		// 检出 3s 内未使用的代理
 		if _, has := candidate[c.proxies.pl[i].p.IP]; !has {
 			var schema string
 			if c.proxies.pl[i].p.NotHTTPS {
@@ -123,17 +145,17 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 }
 
 //IPLimiter rt
-func (c *MemCache) IPLimiter(ip string) bool {
+func (c *MemCache) IPLimiter(req *http.Request) bool {
 	c.ips.l.Lock()
 	defer c.ips.l.Unlock()
 	now := time.Now().Unix()
-	entry, has := c.ips.list[ip]
+	entry, has := c.ips.list[req.RemoteAddr]
 	if has {
 		if now == entry.lastActive && entry.num > proxyinabox.Config.Sys.RequestLimitPerIP {
 			return false
 		}
 	} else {
-		c.ips.list[ip] = &ipActivityEntry{num: 1, lastActive: now}
+		c.ips.list[req.RemoteAddr] = &ipActivityEntry{num: 1, lastActive: now}
 	}
 
 	if entry.lastActive == now {
@@ -146,21 +168,61 @@ func (c *MemCache) IPLimiter(ip string) bool {
 }
 
 //HostLimiter rt
-func (c *MemCache) HostLimiter(ip, host string) bool {
-
+func (c *MemCache) HostLimiter(req *http.Request) bool {
+	c.domainLimit.l.Lock()
+	defer c.domainLimit.l.Unlock()
+	ip := req.RemoteAddr
+	domain := req.Host
+	now := time.Now().Unix()
+	ds, has := c.domainLimit.list[ip]
+	if !has {
+		c.domainLimit.list[ip] = &domainActivity{
+			domains: &domainActivityEntry{
+				activity: make(map[string]struct{}),
+			},
+		}
+		c.domainLimit.list[ip].domains.activity[domain] = struct{}{}
+		return true
+	}
+	if now-ds.last > 60*30 {
+		ds.domains.activity = make(map[string]struct{})
+	}
+	ds.domains.activity[domain] = struct{}{}
+	ds.last = now
+	return len(ds.domains.activity) < proxyinabox.Config.Sys.DomainsPerIP
 }
 
 //HasProxy rt
-func (c *MemCache) HasProxy(p string) bool {
-
+func (c *MemCache) HasProxy(proxy string) bool {
+	_, has := c.proxies.index[proxy]
+	return has
 }
 
 //SaveProxy rt
 func (c *MemCache) SaveProxy(p proxyinabox.Proxy) error {
-
+	c.proxies.l.Lock()
+	defer c.proxies.l.Unlock()
+	if e := proxyinabox.DB.Save(&p).Error; e != nil {
+		return e
+	}
+	c.proxies.pl = append(c.proxies.pl, &proxyEntry{
+		p: &p,
+		n: 0,
+	})
+	return nil
 }
 
 //DeleteProxy rt
 func (c *MemCache) DeleteProxy(p proxyinabox.Proxy) {
-
+	if p.ID == 0 {
+		return
+	}
+	c.proxies.l.Lock()
+	defer c.proxies.l.Unlock()
+	for i, e := range c.proxies.pl {
+		if e.p.IP == p.IP {
+			c.proxies.pl = append(c.proxies.pl[:i], c.proxies.pl[i+1:]...)
+		}
+	}
+	proxyinabox.DB.Delete(&p)
 }
