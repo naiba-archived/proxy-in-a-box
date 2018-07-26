@@ -65,29 +65,6 @@ sys:
 
 ## Benchmark
 
-Server bandwidth and mysql configuration will affect the test results, mysql configuration affects the scheduling of the agent.
-
 ```shell
-~$ wrk -H "Naiba: lifelonglearning"  -t30 -c30 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
-Running 1m test @ http://127.0.0.1:8080
-  30 threads and 30 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.15s     2.76s   23.61s    88.89%
-    Req/Sec    14.17      8.69    30.00     70.42%
-  1058 requests in 1.00m, 487.21KB read
-  Socket errors: connect 0, read 7, write 0, timeout 10
-  Non-2xx or 3xx responses: 37
-Requests/sec:     17.61
-Transfer/sec:      8.11KB
-~$ wrk -H "Naiba: lifelonglearning"  -t50 -c50 -d60s -s proxy.lua --timeout 30s http://127.0.0.1:8080
-Running 1m test @ http://127.0.0.1:8080
-  50 threads and 50 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.50s     3.44s   24.30s    88.89%
-    Req/Sec    13.01      9.95    30.00     58.77%
-  1050 requests in 1.00m, 500.08KB read
-  Socket errors: connect 0, read 15, write 0, timeout 15
-  Non-2xx or 3xx responses: 50
-Requests/sec:     17.47
-Transfer/sec:      8.32KB
+ab -H 'Naiba: lifelonglearning' -v4  -n100 -c10 -X 127.0.0.1:8080 http://api.ip.la/cn
 ```
