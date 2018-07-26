@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -53,11 +54,11 @@ func init() {
 
 	proxyinabox.Init()
 	proxyinabox.CI = service.NewMemCache()
-	proxyinabox.LoadCache()
 
 	crawler.Init()
 
-	newMITM().Init()
+	m = newMITM()
+	m.Init()
 }
 
 func main() {
@@ -78,5 +79,11 @@ func newMITM() *mitm.MITM {
 		},
 		IsDirect:  false,
 		Scheduler: proxyinabox.CI.PickProxy,
+		Filter: func(req *http.Request) error {
+			if !proxyinabox.CI.IPLimiter(req) || !proxyinabox.CI.HostLimiter(req) {
+				return fmt.Errorf("%s", "超出请求限制")
+			}
+			return nil
+		},
 	}
 }
