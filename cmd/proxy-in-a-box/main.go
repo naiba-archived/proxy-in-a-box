@@ -80,6 +80,9 @@ func newMITM() *mitm.MITM {
 		IsDirect:  false,
 		Scheduler: proxyinabox.CI.PickProxy,
 		Filter: func(req *http.Request) error {
+			if req.Header.Get("Naiba") != "lifelonglearning" {
+				return fmt.Errorf("%s", "NAIVE")
+			}
 			if !proxyinabox.CI.IPLimiter(req) {
 				return fmt.Errorf("%s", "请求次数过快")
 			}
