@@ -3,8 +3,6 @@ package proxyinabox
 import (
 	"fmt"
 
-	"github.com/go-redis/redis"
-
 	"github.com/jinzhu/gorm"
 
 	// mysql driver for GORM
@@ -13,6 +11,9 @@ import (
 
 //DB instance
 var DB *gorm.DB
+
+//CI cache instance
+var CI Cache
 
 //Conf config struct
 type Conf struct {
@@ -44,24 +45,8 @@ var Config Conf
 
 //Init init system
 func Init() {
-	if Config.Sys.VerifyDuration <= 5 {
-		panic("proxy verify duration (must >5 minute)")
-	}
-
-	var err error
-	DB, err = gorm.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Dbname+"?charset=utf8mb4&parseTime=True&loc=Local")
-	if err != nil {
-		fmt.Println("DB!!!", err.Error())
-		panic("failed to connect database")
-	}
-
-	if Config.Debug {
-		DB.LogMode(true)
-	}
-
-	DB.AutoMigrate(&Proxy{})
-
-	initRedis()
+	validateConf()
+	initDB()
 	loadCache()
 }
 
@@ -69,8 +54,25 @@ func loadCache() {
 	var ps []Proxy
 	DB.Model(&Proxy{}).Find(&ps)
 	for _, p := range ps {
-		cache.ZAdd("ppc", redis.Z{Member: string(p.ID)})
-		cache.HSet("ppi", string(p.ID), fmt.Sprintf("%s:%s", p.IP, p.Port))
-		cache.HSet("ppr", fmt.Sprintf("%s:%s", p.IP, p.Port), p.ID)
+		//TODO:loadCache
+		fmt.Println(p)
+	}
+}
+
+func initDB() {
+	var err error
+	DB, err = gorm.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Dbname+"?charset=utf8mb4&parseTime=True&loc=Local")
+	if err != nil {
+		panic(err)
+	}
+	if Config.Debug {
+		DB.LogMode(true)
+	}
+	DB.AutoMigrate(&Proxy{})
+}
+
+func validateConf() {
+	if Config.Sys.VerifyDuration <= 5 {
+		panic("proxy verify duration (must >5 minute)")
 	}
 }
