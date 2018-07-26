@@ -26,12 +26,10 @@ var rootCmd = &cobra.Command{
 	Short: "Proxy-in-a-Box provide many proxies.",
 	Long:  `Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("[PIAB]", "[😁]", proxyinabox.Config.Sys.Name, "v1.0.0")
-
-		m.ServeHTTP()
-
 		crawler.FetchProxies()
 		crawler.Verify()
+
+		m.ServeHTTP()
 
 		c := cron.New()
 		c.AddFunc("@daily", crawler.FetchProxies)
@@ -53,6 +51,7 @@ func init() {
 	com.PanicIfNotNil(viper.Unmarshal(&proxyinabox.Config))
 
 	proxyinabox.Init()
+	fmt.Println("[PIAB]", "main", "[😁]", proxyinabox.Config.Sys.Name, "v1.0.0")
 	proxyinabox.CI = service.NewMemCache()
 
 	crawler.Init()

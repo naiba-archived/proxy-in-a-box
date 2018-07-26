@@ -17,7 +17,7 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	go func() {
 		clientRequestDump, err = httputil.DumpRequestOut(clientRequest, true)
 		if err != nil {
-			fmt.Println("DumpRequest error ", err)
+			fmt.Println("[MITM]", "DumpRequest", "[❎]", err)
 		}
 		ch <- true
 	}()
@@ -27,12 +27,12 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	if !m.IsDirect {
 		proxy, err := m.Scheduler(clientRequest)
 		if err != nil {
-			fmt.Println("prxy scheduler error", err)
+			fmt.Println("[MITM]", "proxy scheduler", "[❎]", err)
 			return
 		}
 		p, err := url.Parse(proxy)
 		if err != nil {
-			fmt.Println("prxy parse error", err)
+			fmt.Println("[MITM]", "proxy parse", "[❎]", err)
 			return
 		}
 		transport.Proxy = http.ProxyURL(p)
@@ -42,28 +42,32 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	}
 
 	clientRequest.RequestURI = ""
-	cli := http.Client{Transport: &transport}
+	cli := http.Client{
+		Transport: &transport,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return fmt.Errorf("")
+		},
+	}
 	remoteResponse, err = cli.Do(clientRequest)
-
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[MITM]", "proxy parse", "[❎]", err)
 		return
 	}
 
 	remoteResponseDump, err = httputil.DumpResponse(remoteResponse, true)
 	if err != nil {
-		fmt.Println("respDump error:", err)
+		fmt.Println("[MITM]", "respDump", "[❎]", err)
 		return
 	}
 
 	clientResponse.WriteHeader(remoteResponse.StatusCode)
 	_, err = clientResponse.Write(remoteResponseDump)
 	if err != nil {
-		fmt.Println("connIn write error:", err)
+		fmt.Println("[MITM]", "connIn write", "[❎]", err)
 		return
 	}
 
-	fmt.Println("REQUEST:", string(clientRequestDump))
-	fmt.Println("RESPONSE:", string(remoteResponseDump))
+	fmt.Println("[MITM]", "REQUEST", "[📮]", string(clientRequestDump))
+	fmt.Println("[MITM]", "RESPONSE", "[📮]", string(remoteResponseDump))
 	<-ch
 }

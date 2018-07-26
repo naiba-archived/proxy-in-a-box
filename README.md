@@ -50,12 +50,6 @@ mysql:
   user: root
   pass: 123456
   dbname: proxy
-# redis config
-redis:
-  host: 127.0.0.1
-  port: 6379
-  pass: ""
-  db: 0
 # system config
 sys:
   name: Naiba

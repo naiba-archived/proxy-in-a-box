@@ -101,7 +101,7 @@ func (m *MITM) ServeHTTP() {
 	//start http proxy server
 	httpServer := m.newServer(m.HTTPAddr)
 	go func() {
-		fmt.Println("HTTP proxy: `http://" + m.HTTPAddr + "`")
+		fmt.Println("[MITM]", "proxy server", "[💖]", "http://"+m.HTTPAddr)
 		if e := httpServer.ListenAndServe(); e != nil {
 			panic(e)
 		}
@@ -111,7 +111,7 @@ func (m *MITM) ServeHTTP() {
 	if m.ListenHTTPS {
 		httpsServer := m.newServer(m.HTTPSAddr)
 		go func() {
-			fmt.Println("HTTPS proxy: `https://" + m.HTTPSAddr + "`")
+			fmt.Println("[MITM]", "proxy server", "[💖]", "https://"+m.HTTPSAddr)
 			if e := httpsServer.ListenAndServeTLS(m.TLSConf.CertFile, m.TLSConf.PrivateKeyFile); e != nil {
 				panic(e)
 			}
@@ -138,7 +138,7 @@ func (m *MITM) injectHTTPS(resp http.ResponseWriter, req *http.Request) {
 
 	cert, err := m.FakeCert(host)
 	if err != nil {
-		msg := fmt.Sprintf("Could not get mitm cert for name: %s\nerror: %s", host, err)
+		msg := fmt.Sprintf("[MITM] injectHTTPS [💖] Could not get mitm cert for name: %s\nerror: %s", host, err)
 		badGateWay(resp, msg)
 		return
 	}
@@ -146,7 +146,7 @@ func (m *MITM) injectHTTPS(resp http.ResponseWriter, req *http.Request) {
 	// handle connection
 	connIn, _, err := resp.(http.Hijacker).Hijack()
 	if err != nil {
-		msg := fmt.Sprintf("Unable to access underlying connection from client: %s", err)
+		msg := fmt.Sprintf("[MITM] injectHTTPS [💖] Unable to access underlying connection from client: %s", err)
 		badGateWay(resp, msg)
 		return
 	}
@@ -163,7 +163,7 @@ func (m *MITM) injectHTTPS(resp http.ResponseWriter, req *http.Request) {
 	go func() {
 		err = http.Serve(listener, handler)
 		if err != nil && err != io.EOF {
-			fmt.Printf("Error serving mitm'ed connection: %s", err)
+			fmt.Printf("[MITM] injectHTTPS [💖] Error serving mitm'ed connection: %s", err)
 		}
 	}()
 
