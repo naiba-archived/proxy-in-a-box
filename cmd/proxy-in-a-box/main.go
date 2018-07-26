@@ -65,8 +65,8 @@ func init() {
 			CommonName      string
 			ServerTLSConfig *tls.Config
 		}{
-			PrivateKeyFile: "server.key",
-			CertFile:       "server.pem",
+			PrivateKeyFile: "proxyinabox.key",
+			CertFile:       "proxyinabox.pem",
 		},
 		IsDirect:  false,
 		Scheduler: proxyinabox.CI.PickProxy,
