@@ -58,9 +58,9 @@ func getDocFromURL(url string) (*goquery.Document, error) {
 //FetchProxies fetch new proxies
 func FetchProxies() {
 	cs := []proxyinabox.ProxyCrawler{
-		//newKuai(),
+		newKuai(),
 		newXici(),
-		//new66IP(),
+		new66IP(),
 	}
 
 	for _, c := range cs {
@@ -87,9 +87,9 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.LastVerify = time.Now()
 
 				if e := proxyinabox.CI.SaveProxy(p); e == nil {
-					fmt.Println("worker", id, "find a available proxy", p)
+					fmt.Println("[PIAB]", "crawler", "[✅]", id, "find a available proxy", p)
 				} else {
-					fmt.Println("worker", id, "error save proxy", e.Error())
+					fmt.Println("[PIAB]", "crawler", "[❎]", id, "error save proxy", e.Error())
 				}
 			}
 			pendingValidate.Delete(proxy)
