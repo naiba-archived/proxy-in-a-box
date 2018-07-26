@@ -103,8 +103,25 @@ func NewMemCache() *MemCache {
 			list: make(map[string]*domainActivity),
 		},
 	}
+	this.load()
 	this.gc(time.Minute * 10)
 	return this
+}
+
+func (c *MemCache) load() {
+	var ps []proxyinabox.Proxy
+	err := proxyinabox.DB.Find(&ps).Error
+	if err != nil {
+		panic(err)
+	}
+	c.proxies.l.Lock()
+	for i := 0; i < len(ps); i++ {
+		c.proxies.pl = append(c.proxies.pl, &proxyEntry{
+			p: &ps[i],
+		})
+
+		c.proxies.index[ps[i].URI()] = struct{}{}
+	}
 }
 
 func (c *MemCache) gc(dur time.Duration) {
@@ -191,12 +208,6 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 	for i := 0; i < length; i++ {
 		// 检出 3s 内未使用的代理
 		if _, has := candidate[c.proxies.pl[i].p.IP]; !has {
-			var proxy string
-			if c.proxies.pl[i].p.NotHTTPS {
-				proxy = "http://"
-			} else {
-				proxy = "https://"
-			}
 
 			//记录到域名代理表
 			c.domains.dl[domain] = append(c.domains.dl[domain], &proxyEntry{
@@ -206,7 +217,7 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 			//代理使用次数+1
 			c.proxies.pl[i].n++
 
-			return proxy + c.proxies.pl[i].p.IP + ":" + c.proxies.pl[i].p.Port, nil
+			return c.proxies.pl[i].p.URI(), nil
 		}
 	}
 

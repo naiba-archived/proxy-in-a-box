@@ -30,7 +30,7 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request) {
 			fmt.Println("prxy scheduler error", err)
 			return
 		}
-		p, err := url.Parse("http://" + proxy)
+		p, err := url.Parse(proxy)
 		if err != nil {
 			fmt.Println("prxy parse error", err)
 			return

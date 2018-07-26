@@ -17,18 +17,21 @@ const (
 	basename = "NBMITM"
 )
 
+//TLSConfig TLS配置
+type TLSConfig struct {
+	PrivateKeyFile  string
+	CertFile        string
+	Organization    string
+	CommonName      string
+	ServerTLSConfig *tls.Config
+}
+
 //MITM 中间人
 type MITM struct {
 	ListenHTTPS bool   //开启 HTTPS 代理服务器
 	HTTPAddr    string //HTTP listen addr
 	HTTPSAddr   string //HTTPS listen addr
-	TLSConf     *struct {
-		PrivateKeyFile  string
-		CertFile        string
-		Organization    string
-		CommonName      string
-		ServerTLSConfig *tls.Config
-	}
+	TLSConf     *TLSConfig
 
 	IsDirect  bool                                              //是否直连，不通过代理
 	Scheduler func(req *http.Request) (proxy string, err error) //代理调度 func

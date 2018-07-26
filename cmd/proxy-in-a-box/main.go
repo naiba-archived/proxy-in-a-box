@@ -1,12 +1,12 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/naiba/proxyinabox/mitm"
+	"github.com/naiba/proxyinabox/service"
 
 	"github.com/naiba/com"
 
@@ -52,31 +52,31 @@ func init() {
 	com.PanicIfNotNil(viper.Unmarshal(&proxyinabox.Config))
 
 	proxyinabox.Init()
+	proxyinabox.CI = service.NewMemCache()
+	proxyinabox.LoadCache()
+
 	crawler.Init()
 
-	m = &mitm.MITM{
-		ListenHTTPS: true,
-		HTTPAddr:    httpProxyAddr,
-		HTTPSAddr:   httpsProxyAddr,
-		TLSConf: &struct {
-			PrivateKeyFile  string
-			CertFile        string
-			Organization    string
-			CommonName      string
-			ServerTLSConfig *tls.Config
-		}{
-			PrivateKeyFile: "proxyinabox.key",
-			CertFile:       "proxyinabox.pem",
-		},
-		IsDirect:  false,
-		Scheduler: proxyinabox.CI.PickProxy,
-	}
-	m.Init()
+	newMITM().Init()
 }
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+}
+
+func newMITM() *mitm.MITM {
+	return &mitm.MITM{
+		ListenHTTPS: true,
+		HTTPAddr:    httpProxyAddr,
+		HTTPSAddr:   httpsProxyAddr,
+		TLSConf: &mitm.TLSConfig{
+			PrivateKeyFile: "proxyinabox.key",
+			CertFile:       "proxyinabox.pem",
+		},
+		IsDirect:  false,
+		Scheduler: proxyinabox.CI.PickProxy,
 	}
 }

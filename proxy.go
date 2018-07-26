@@ -32,7 +32,13 @@ func (p Proxy) String() string {
 
 //URI get uri
 func (p Proxy) URI() string {
-	return "http://" + p.IP + ":" + p.Port
+	var proxy string
+	if p.NotHTTPS {
+		proxy = "http://"
+	} else {
+		proxy = "https://"
+	}
+	return proxy + p.IP + ":" + p.Port
 }
 
 //ProxyCrawler proxy crawler

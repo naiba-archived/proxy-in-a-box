@@ -1,8 +1,6 @@
 package proxyinabox
 
 import (
-	"fmt"
-
 	"github.com/jinzhu/gorm"
 
 	// mysql driver for GORM
@@ -47,16 +45,6 @@ var Config Conf
 func Init() {
 	validateConf()
 	initDB()
-	loadCache()
-}
-
-func loadCache() {
-	var ps []Proxy
-	DB.Model(&Proxy{}).Find(&ps)
-	for _, p := range ps {
-		//TODO:loadCache
-		fmt.Println(p)
-	}
 }
 
 func initDB() {

@@ -36,7 +36,7 @@ func Verify() {
 
 func getDelay(pc chan proxyinabox.Proxy) {
 	for p := range pc {
-		proxy := "http://" + p.IP + ":" + p.Port
+		proxy := p.URI()
 		start := time.Now().Unix()
 		var resp validateJSON
 		_, _, errs := gorequest.New().Timeout(time.Second*5).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
