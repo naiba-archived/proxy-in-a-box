@@ -2,13 +2,12 @@ package crawler
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/naiba/com"
 	"github.com/naiba/proxyinabox"
+	"github.com/parnurzeal/gorequest"
 )
 
 //P66IP 66ip site
@@ -19,8 +18,8 @@ type P66IP struct {
 func new66IP() *P66IP {
 	this := new(P66IP)
 	this.urls = []string{
-		"http://www.66ip.cn/mo.php?tqsl=1000",
-		"http://www.66ip.cn/nmtq.php?getnum=1000",
+		"http://www.66ip.cn/mo.php?tqsl=200",
+		"http://www.66ip.cn/nmtq.php?getnum=200",
 	}
 	return this
 }
@@ -28,14 +27,16 @@ func new66IP() *P66IP {
 //Fetch fetch all proxies
 func (p *P66IP) Fetch() error {
 	for _, pageURL := range p.urls {
-		for i := 0; i < 10; i++ {
-			resp, err := http.Get(pageURL)
-			if err != nil {
-				fmt.Println("66IP ERROR!!", err.Error())
-				return err
+		for i := 0; i < 50; i++ {
+			num := 0
+			_, body, errs := gorequest.New().Get(pageURL).
+				Set("User-Agent", com.RandomUserAgent()).
+				Retry(3, time.Second*3).
+				End()
+			if len(errs) != 0 {
+				fmt.Println("[PIAB]", "66ip", "[❎]", "crawler", errs)
+				continue
 			}
-			body, err := ioutil.ReadAll(resp.Body)
-			defer resp.Body.Close()
 			lines := strings.Split(string(body), "<br />")
 			for _, line := range lines {
 				ipinfo := strings.Split(strings.TrimSpace(line), ":")
@@ -44,10 +45,12 @@ func (p *P66IP) Fetch() error {
 					p.IP = ipinfo[0]
 					p.Port = ipinfo[1]
 					p.Platform = 1
+					p.HTTPS = false
+					num++
 					validateJobs <- p
 				}
 			}
-
+			fmt.Println("[PIAB]", "66ip", "[🍾]", "crawler", num, "proxies.")
 			//delay
 			time.Sleep(time.Second * 3)
 		}

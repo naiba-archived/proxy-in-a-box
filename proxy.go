@@ -15,7 +15,7 @@ type Proxy struct {
 	Country    string `gorm:"type:varchar(15)"`
 	Provence   string `gorm:"type:varchar(15)"`
 	Platform   int
-	NotHTTPS   bool
+	HTTPS      bool
 	Delay      int64
 	LastVerify time.Time
 }
@@ -26,17 +26,17 @@ type ProxyService interface {
 }
 
 func (p Proxy) String() string {
-	return fmt.Sprintf("[PIAB] [🐲] proxy [id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d platform:%d]",
-		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.NotHTTPS, p.Delay, p.Platform)
+	return fmt.Sprintf("[PIAB] proxy [🐲] { id:%d %s:%s country:%s provence:%s HTTPS:%t delay:%d platform:%d }",
+		p.ID, p.IP, p.Port, p.Country, p.Provence, !p.HTTPS, p.Delay, p.Platform)
 }
 
 //URI get uri
 func (p Proxy) URI() string {
 	var proxy string
-	if p.NotHTTPS {
-		proxy = "http://"
-	} else {
+	if p.HTTPS {
 		proxy = "https://"
+	} else {
+		proxy = "http://"
 	}
 	return proxy + p.IP + ":" + p.Port
 }

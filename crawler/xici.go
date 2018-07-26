@@ -31,9 +31,10 @@ func (xc *Xici) Fetch() error {
 
 	for _, pageURL := range xc.urls {
 		for !ended {
+			num := 0
 			doc, err := getDocFromURL(pageURL + strconv.Itoa(currPageNo))
 			if err != nil {
-				fmt.Println("XICI ERROR!!", err.Error())
+				fmt.Println("[PIAB]", "xici", "[❎]", "crawler", err)
 				return err
 			}
 
@@ -58,7 +59,10 @@ func (xc *Xici) Fetch() error {
 					return true
 				})
 				p.Platform = 3
+				//p.HTTPS = strings.Contains(tr.Text(), "HTTPS")
+
 				validateJobs <- p
+				num++
 			})
 
 			currPageNo++
@@ -69,6 +73,8 @@ func (xc *Xici) Fetch() error {
 				currPageNo = 1
 				ended = true
 			}
+
+			fmt.Println("[PIAB]", "xici", "[🍾]", "crawler", num, "proxies.")
 
 			//delay
 			time.Sleep(time.Second * 3)

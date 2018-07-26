@@ -34,9 +34,11 @@ func (k *Kuai) Fetch() error {
 
 		for !ended {
 
+			num := 0
+
 			doc, err := getDocFromURL(pageURL + strconv.Itoa(currPageNo))
 			if err != nil {
-				fmt.Println("Kuai ERROR!!", err.Error())
+				fmt.Println("[PIAB]", "kuai", "[❎]", "crawler", err)
 				return err
 			}
 
@@ -61,7 +63,9 @@ func (k *Kuai) Fetch() error {
 					return true
 				})
 				p.Platform = 2
+				//p.HTTPS = strings.Contains(tr.Text(), "HTTPS")
 				validateJobs <- p
+				num++
 			})
 
 			flag := false
@@ -84,6 +88,8 @@ func (k *Kuai) Fetch() error {
 				}
 				return true
 			})
+
+			fmt.Println("[PIAB]", "kuai", "[🍾]", "crawler", num, "proxies.")
 
 			//delay
 			time.Sleep(time.Second * 3)

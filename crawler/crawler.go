@@ -40,6 +40,7 @@ func getDocFromURL(url string) (*goquery.Document, error) {
 
 	_, body, errs := gorequest.New().Get(url).
 		Set("User-Agent", com.RandomUserAgent()).
+		Retry(3, time.Second*3).
 		End()
 	if len(errs) > 0 {
 		return nil, errs[0]
@@ -57,9 +58,9 @@ func getDocFromURL(url string) (*goquery.Document, error) {
 //FetchProxies fetch new proxies
 func FetchProxies() {
 	cs := []proxyinabox.ProxyCrawler{
-		newKuai(),
+		//newKuai(),
 		newXici(),
-		new66IP(),
+		//new66IP(),
 	}
 
 	for _, c := range cs {
@@ -78,13 +79,7 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 			pendingValidate.Store(proxy, nil)
 			var resp validateJSON
 			start := time.Now().Unix()
-			// detect HTTP or HTTPS
-			_, _, errs := gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("https://api.ip.la/cn?json").EndStruct(&resp)
-			if len(errs) != 0 || resp.IP != p.IP {
-				start = time.Now().Unix()
-				_, _, errs = gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
-				p.NotHTTPS = true
-			}
+			_, _, errs := gorequest.New().Timeout(time.Second*7).Retry(3, time.Second*2, http.StatusInternalServerError).Proxy(proxy).Get("http://api.ip.la/cn?json").EndStruct(&resp)
 			if len(errs) == 0 && resp.IP == p.IP {
 				p.Country = resp.Location.CountryName
 				p.Provence = resp.Location.Province
