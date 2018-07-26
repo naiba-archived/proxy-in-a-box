@@ -40,7 +40,6 @@ func (m *MITM) GenerateCA() error {
 		}
 		m.issuingCert.WriteToFile(m.TLSConf.CertFile)
 	}
-	m.issuingCertPem = m.issuingCert.PEMEncoded()
 	return nil
 }
 

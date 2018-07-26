@@ -38,11 +38,10 @@ type MITM struct {
 	Scheduler func(req *http.Request) (proxy string, err error) //代理调度 func
 	Filter    func(req *http.Request) error                     //请求鉴权、清洗、限流
 
-	cache          *cache.Cache
-	pk             *keyman.PrivateKey
-	pkPem          []byte
-	issuingCert    *keyman.Certificate
-	issuingCertPem []byte
+	cache       *cache.Cache
+	pk          *keyman.PrivateKey
+	pkPem       []byte
+	issuingCert *keyman.Certificate
 }
 
 //Init mitm
