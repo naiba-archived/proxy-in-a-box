@@ -8,24 +8,24 @@ import (
 )
 
 //Dump rt
-func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request) {
-	var reqDump []byte
-	var respDump []byte
+func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Request) {
+	var clientRequestDump []byte
+	var remoteResponseDump []byte
 	var err error
-	var respOut *http.Response
+	var remoteResponse *http.Response
 	ch := make(chan bool)
 	go func() {
-		reqDump, err = httputil.DumpRequestOut(req, true)
+		clientRequestDump, err = httputil.DumpRequestOut(clientRequest, true)
 		if err != nil {
 			fmt.Println("DumpRequest error ", err)
 		}
 		ch <- true
 	}()
 
-	tp := http.Transport{}
+	transport := http.Transport{}
 
 	if !m.IsDirect {
-		proxy, err := m.Scheduler(req)
+		proxy, err := m.Scheduler(clientRequest)
 		if err != nil {
 			fmt.Println("prxy scheduler error", err)
 			return
@@ -35,35 +35,35 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request) {
 			fmt.Println("prxy parse error", err)
 			return
 		}
-		tp.Proxy = http.ProxyURL(p)
+		transport.Proxy = http.ProxyURL(p)
 	} else {
-		req.Header.Del("Proxy-Connection")
-		req.Header.Set("Connection", "Keep-Alive")
+		clientRequest.Header.Del("Proxy-Connection")
+		clientRequest.Header.Set("Connection", "Keep-Alive")
 	}
 
-	req.RequestURI = ""
-	cli := http.Client{Transport: &tp}
-	respOut, err = cli.Do(req)
+	clientRequest.RequestURI = ""
+	cli := http.Client{Transport: &transport}
+	remoteResponse, err = cli.Do(clientRequest)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	respDump, err = httputil.DumpResponse(respOut, true)
+	remoteResponseDump, err = httputil.DumpResponse(remoteResponse, true)
 	if err != nil {
 		fmt.Println("respDump error:", err)
 		return
 	}
 
-	resp.WriteHeader(respOut.StatusCode)
-	_, err = resp.Write(respDump)
+	clientResponse.WriteHeader(remoteResponse.StatusCode)
+	_, err = clientResponse.Write(remoteResponseDump)
 	if err != nil {
 		fmt.Println("connIn write error:", err)
 		return
 	}
 
-	fmt.Println("REQUEST:", string(reqDump))
-	fmt.Println("RESPONSE:", string(respDump))
+	fmt.Println("REQUEST:", string(clientRequestDump))
+	fmt.Println("RESPONSE:", string(remoteResponseDump))
 	<-ch
 }

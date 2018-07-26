@@ -26,7 +26,7 @@ var rootCmd = &cobra.Command{
 	Short: "Proxy-in-a-Box provide many proxies.",
 	Long:  `Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("[Proxy-in-a-Box]", proxyinabox.Config.Sys.Name, "v1.0.0")
+		fmt.Println("[PIAB]", "[😁]", proxyinabox.Config.Sys.Name, "v1.0.0")
 
 		m.ServeHTTP()
 
@@ -80,8 +80,11 @@ func newMITM() *mitm.MITM {
 		IsDirect:  false,
 		Scheduler: proxyinabox.CI.PickProxy,
 		Filter: func(req *http.Request) error {
-			if !proxyinabox.CI.IPLimiter(req) || !proxyinabox.CI.HostLimiter(req) {
-				return fmt.Errorf("%s", "超出请求限制")
+			if !proxyinabox.CI.IPLimiter(req) {
+				return fmt.Errorf("%s", "请求次数过快")
+			}
+			if !proxyinabox.CI.HostLimiter(req) {
+				return fmt.Errorf("%s", "请求域名过多")
 			}
 			return nil
 		},

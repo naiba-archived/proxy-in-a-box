@@ -105,7 +105,9 @@ func NewMemCache() *MemCache {
 		},
 	}
 	this.load()
+	fmt.Println("[PIAB]", "[✅]", "load cache succeddful!")
 	this.gc(time.Minute * 10)
+	fmt.Println("[PIAB]", "[❎]", "start cache gc thread succeddful!")
 	return this
 }
 
@@ -116,6 +118,7 @@ func (c *MemCache) load() {
 		panic(err)
 	}
 	c.proxies.l.Lock()
+	defer c.proxies.l.Unlock()
 	for i := 0; i < len(ps); i++ {
 		c.proxies.pl = append(c.proxies.pl, &proxyEntry{
 			p: &ps[i],
