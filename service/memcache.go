@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -229,20 +230,21 @@ func (c *MemCache) IPLimiter(req *http.Request) bool {
 	c.ips.l.Lock()
 	defer c.ips.l.Unlock()
 	now := time.Now().Unix()
-	entry, has := c.ips.list[req.RemoteAddr]
-	if has {
-		if now == entry.lastActive && entry.num > proxyinabox.Config.Sys.RequestLimitPerIP {
-			return false
-		}
-	} else {
-		c.ips.list[req.RemoteAddr] = &ipActivityEntry{num: 1, lastActive: now}
-	}
+	ip := getIP(req.RemoteAddr)
 
-	if entry.lastActive == now {
-		entry.num++
-	} else {
-		entry.num = 1
+	entry, has := c.ips.list[ip]
+	if has {
+		if now == entry.lastActive {
+			if entry.num > proxyinabox.Config.Sys.RequestLimitPerIP {
+				return false
+			}
+			entry.num++
+		} else {
+			entry.num = 1
+		}
 		entry.lastActive = now
+	} else {
+		c.ips.list[ip] = &ipActivityEntry{num: 1, lastActive: now}
 	}
 	return true
 }
@@ -251,7 +253,7 @@ func (c *MemCache) IPLimiter(req *http.Request) bool {
 func (c *MemCache) HostLimiter(req *http.Request) bool {
 	c.domainLimit.l.Lock()
 	defer c.domainLimit.l.Unlock()
-	ip := req.RemoteAddr
+	ip := getIP(req.RemoteAddr)
 	domain := req.Host
 	now := time.Now().Unix()
 	ds, has := c.domainLimit.list[ip]
@@ -311,4 +313,8 @@ func (c *MemCache) DeleteProxy(p proxyinabox.Proxy) {
 		}
 	}
 	proxyinabox.DB.Delete(&p)
+}
+
+func getIP(str string) string {
+	return strings.Split(str, ":")[0]
 }
