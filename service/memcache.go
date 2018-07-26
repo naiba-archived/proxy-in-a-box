@@ -47,7 +47,7 @@ type proxyList struct {
 */
 type domainScheduling struct {
 	l  sync.Mutex
-	dl map[string]*proxyList
+	dl map[string][]*proxyEntry
 }
 
 /*
@@ -69,11 +69,8 @@ type ipActivity struct {
    域名限流池
 ==============
 */
-type domainActivityEntry struct {
-	activity map[string]struct{}
-}
 type domainActivity struct {
-	domains *domainActivityEntry
+	domains map[string]int64
 	last    int64
 }
 type domainActivityList struct {
@@ -89,12 +86,75 @@ type MemCache struct {
 	domainLimit *domainActivityList
 }
 
-/*
-TODO:
-1. new MemCache
-2. domains 列表回收
-3. ips 列表回收
-*/
+//NewMemCache rt
+func NewMemCache() *MemCache {
+	this := &MemCache{
+		proxies: &proxyList{
+			pl:    make([]*proxyEntry, 0),
+			index: make(map[string]struct{}),
+		},
+		domains: &domainScheduling{
+			dl: make(map[string][]*proxyEntry),
+		},
+		ips: &ipActivity{
+			list: make(map[string]*ipActivityEntry),
+		},
+		domainLimit: &domainActivityList{
+			list: make(map[string]*domainActivity),
+		},
+	}
+	this.gc(time.Minute * 10)
+	return this
+}
+
+func (c *MemCache) gc(dur time.Duration) {
+	ticker := time.NewTicker(dur)
+	go func() {
+		for range ticker.C {
+			now := time.Now().Unix()
+			// 回收域名计数
+			c.domainLimit.l.Lock()
+			for k, v := range c.domainLimit.list {
+				if now-v.last > 60*30 {
+					delete(c.domainLimit.list, k)
+				} else {
+					for k1, v1 := range v.domains {
+						if now-v1 > 60*30 {
+							delete(v.domains, k1)
+						}
+					}
+					if len(v.domains) == 0 {
+						delete(c.domainLimit.list, k)
+					}
+				}
+			}
+			c.domainLimit.l.Unlock()
+			// 回收IP计数
+			now = time.Now().Unix()
+			c.ips.l.Lock()
+			for k, v := range c.ips.list {
+				if v.lastActive != now {
+					delete(c.ips.list, k)
+				}
+			}
+			c.ips.l.Unlock()
+			// 回收代理调度
+			now = time.Now().Unix()
+			c.domains.l.Lock()
+			for k, v := range c.domains.dl {
+				for i, v1 := range v {
+					if now-v1.n > 3 {
+						v = append(v[:i], v[i+1:]...)
+					}
+				}
+				if len(v) == 0 {
+					delete(c.domains.dl, k)
+				}
+			}
+			c.domains.l.Unlock()
+		}
+	}()
+}
 
 //PickProxy rt
 func (c *MemCache) PickProxy(req *http.Request) (string, error) {
@@ -114,30 +174,39 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 	c.domains.l.Lock()
 	defer c.domains.l.Unlock()
 	if pl, has := c.domains.dl[domain]; has {
-		pl.l.Lock()
-		defer pl.l.Unlock()
-		sort.Sort(sortableProxyList(pl.pl))
+		sort.Sort(sortableProxyList(pl))
 
 		//清理长久未活动的代理
-		for i, p := range pl.pl {
+		for i, p := range pl {
 			if now-p.n < 3 {
 				candidate[p.p.IP] = struct{}{}
 			} else {
-				pl.pl = append(pl.pl[:i], pl.pl[i+1:]...)
+				pl = append(pl[:i], pl[i+1:]...)
 			}
 		}
 	}
 
+	c.domains.dl[domain] = make([]*proxyEntry, 0)
+
 	for i := 0; i < length; i++ {
 		// 检出 3s 内未使用的代理
 		if _, has := candidate[c.proxies.pl[i].p.IP]; !has {
-			var schema string
+			var proxy string
 			if c.proxies.pl[i].p.NotHTTPS {
-				schema = "http://"
+				proxy = "http://"
 			} else {
-				schema = "https://"
+				proxy = "https://"
 			}
-			return schema + c.proxies.pl[i].p.IP + ":" + c.proxies.pl[i].p.Port, nil
+
+			//记录到域名代理表
+			c.domains.dl[domain] = append(c.domains.dl[domain], &proxyEntry{
+				p: c.proxies.pl[i].p,
+				n: now,
+			})
+			//代理使用次数+1
+			c.proxies.pl[i].n++
+
+			return proxy + c.proxies.pl[i].p.IP + ":" + c.proxies.pl[i].p.Port, nil
 		}
 	}
 
@@ -177,19 +246,25 @@ func (c *MemCache) HostLimiter(req *http.Request) bool {
 	ds, has := c.domainLimit.list[ip]
 	if !has {
 		c.domainLimit.list[ip] = &domainActivity{
-			domains: &domainActivityEntry{
-				activity: make(map[string]struct{}),
-			},
+			domains: make(map[string]int64),
 		}
-		c.domainLimit.list[ip].domains.activity[domain] = struct{}{}
+		c.domainLimit.list[ip].domains[domain] = now
 		return true
 	}
 	if now-ds.last > 60*30 {
-		ds.domains.activity = make(map[string]struct{})
+		ds.domains = make(map[string]int64)
+		ds.domains[domain] = now
+		ds.last = now
+		return true
 	}
-	ds.domains.activity[domain] = struct{}{}
+	ds.domains[domain] = now
 	ds.last = now
-	return len(ds.domains.activity) < proxyinabox.Config.Sys.DomainsPerIP
+	for k, v := range ds.domains {
+		if now-v > 60*30 {
+			delete(ds.domains, k)
+		}
+	}
+	return len(ds.domains) < proxyinabox.Config.Sys.DomainsPerIP
 }
 
 //HasProxy rt
