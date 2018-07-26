@@ -87,7 +87,9 @@ func validator(id int, validateJobs chan proxyinabox.Proxy) {
 				p.LastVerify = time.Now()
 
 				if e := proxyinabox.CI.SaveProxy(p); e == nil {
-					fmt.Println("[PIAB]", "crawler", "[✅]", id, "find a available proxy", p)
+					if proxyinabox.Config.Debug {
+						fmt.Println("[PIAB]", "crawler", "[✅]", id, "find a available proxy", p)
+					}
 				} else {
 					fmt.Println("[PIAB]", "crawler", "[❎]", id, "error save proxy", e.Error())
 				}

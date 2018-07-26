@@ -67,7 +67,9 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 		return
 	}
 
-	fmt.Println("[MITM]", "REQUEST", "[📮]", string(clientRequestDump))
-	fmt.Println("[MITM]", "RESPONSE", "[📮]", string(remoteResponseDump))
+	if m.Print {
+		fmt.Println("[MITM]", "REQUEST", "[📮]", string(clientRequestDump))
+		fmt.Println("[MITM]", "RESPONSE", "[📮]", string(remoteResponseDump))
+	}
 	<-ch
 }

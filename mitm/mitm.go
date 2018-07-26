@@ -32,6 +32,7 @@ type MITM struct {
 	HTTPAddr    string //HTTP listen addr
 	HTTPSAddr   string //HTTPS listen addr
 	TLSConf     *TLSConfig
+	Print       bool //打印请求详情
 
 	IsDirect  bool                                              //是否直连，不通过代理
 	Scheduler func(req *http.Request) (proxy string, err error) //代理调度 func

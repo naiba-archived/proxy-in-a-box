@@ -169,7 +169,7 @@ func (c *MemCache) gc(dur time.Duration) {
 			for k, v := range c.domains.dl {
 				for i, v1 := range v {
 					if now-v1.n > 3 {
-						v = append(v[:i], v[i+1:]...)
+						deleteProxyEntrySliceItem(v, i)
 					}
 				}
 				if len(v) == 0 {
@@ -208,7 +208,7 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 			if now-p.n < 3 {
 				candidate[p.p.IP] = struct{}{}
 			} else {
-				pl = append(pl[:i], pl[i+1:]...)
+				deleteProxyEntrySliceItem(pl, i)
 			}
 		}
 	} else {
@@ -319,7 +319,7 @@ func (c *MemCache) DeleteProxy(p proxyinabox.Proxy) {
 	defer c.proxies.l.Unlock()
 	for i, e := range c.proxies.pl {
 		if e.p.IP == p.IP {
-			c.proxies.pl = append(c.proxies.pl[:i], c.proxies.pl[i+1:]...)
+			deleteProxyEntrySliceItem(c.proxies.pl, i)
 		}
 	}
 	//hard delete
@@ -328,4 +328,12 @@ func (c *MemCache) DeleteProxy(p proxyinabox.Proxy) {
 
 func getIP(str string) string {
 	return strings.Split(str, ":")[0]
+}
+
+func deleteProxyEntrySliceItem(x []*proxyEntry, i int) {
+	if i == len(x)-1 {
+		x = append(x[:i])
+	} else {
+		x = append(x[:i], x[i+1:]...)
+	}
 }

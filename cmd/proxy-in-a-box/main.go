@@ -76,6 +76,7 @@ func newMITM() *mitm.MITM {
 			PrivateKeyFile: "proxyinabox.key",
 			CertFile:       "proxyinabox.pem",
 		},
+		Print:     proxyinabox.Config.Debug,
 		IsDirect:  false,
 		Scheduler: proxyinabox.CI.PickProxy,
 		Filter: func(req *http.Request) error {
