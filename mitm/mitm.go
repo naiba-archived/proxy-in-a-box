@@ -32,7 +32,7 @@ type MITM struct {
 
 	IsDirect  bool                                              //是否直连，不通过代理
 	Scheduler func(req *http.Request) (proxy string, err error) //代理调度 func
-	Filter    func(req *http.Request) error                     //请求过滤、鉴权
+	Filter    func(req *http.Request) error                     //请求鉴权、清洗、限流
 
 	cache          *cache.Cache
 	pk             *keyman.PrivateKey
@@ -44,7 +44,7 @@ type MITM struct {
 //Init mitm
 func (m *MITM) Init() {
 	m.cache = cache.New(time.Hour, time.Minute)
-	m.GenerateCertForClient()
+	m.GenerateCA()
 
 	if m.TLSConf.CommonName == "" {
 		m.TLSConf.CommonName = basename
@@ -117,6 +117,11 @@ func (m *MITM) ServeHTTP() {
 }
 
 func (m *MITM) serve(w http.ResponseWriter, r *http.Request) {
+	//鉴权、清洗、限流
+	if e := m.Filter(r); e != nil {
+		http.Error(w, e.Error(), http.StatusForbidden)
+		return
+	}
 	if r.Method == http.MethodConnect {
 		m.injectHTTPS(w, r)
 	} else {

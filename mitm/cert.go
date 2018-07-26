@@ -15,8 +15,8 @@ const (
 	year        = 1
 )
 
-//GenerateCertForClient rt
-func (m *MITM) GenerateCertForClient() error {
+//GenerateCA rt
+func (m *MITM) GenerateCA() error {
 	var err error
 	if m.pk, err = keyman.LoadPKFromFile(m.TLSConf.PrivateKeyFile); err != nil {
 		m.pk, err = keyman.GeneratePK(2048)

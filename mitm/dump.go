@@ -9,10 +9,6 @@ import (
 
 //Dump rt
 func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request) {
-	if m.IsDirect {
-		req.Header.Del("Proxy-Connection")
-		req.Header.Set("Connection", "Keep-Alive")
-	}
 	var reqDump []byte
 	var respDump []byte
 	var err error
@@ -40,6 +36,9 @@ func (m *MITM) Dump(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 		tp.Proxy = http.ProxyURL(p)
+	} else {
+		req.Header.Del("Proxy-Connection")
+		req.Header.Set("Connection", "Keep-Alive")
 	}
 
 	req.RequestURI = ""
