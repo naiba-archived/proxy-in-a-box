@@ -123,7 +123,7 @@ func (m *MITM) ServeHTTP() {
 func (m *MITM) serve(w http.ResponseWriter, r *http.Request) {
 	//鉴权、清洗、限流
 	if e := m.Filter(r); e != nil {
-		http.Error(w, e.Error(), http.StatusForbidden)
+		http.Error(w, e.Error(), http.StatusProxyAuthRequired)
 		return
 	}
 	if r.Method == http.MethodConnect {
