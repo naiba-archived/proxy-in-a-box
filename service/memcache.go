@@ -105,9 +105,7 @@ func NewMemCache() *MemCache {
 		},
 	}
 	this.load()
-	fmt.Println("[PIAB]", "[✅]", "load cache succeddful!")
 	this.gc(time.Minute * 10)
-	fmt.Println("[PIAB]", "[❎]", "start cache gc thread succeddful!")
 	return this
 }
 
@@ -126,26 +124,31 @@ func (c *MemCache) load() {
 
 		c.proxies.index[ps[i].URI()] = struct{}{}
 	}
+	fmt.Println("[PIAB]", "cache", "[✅]", "load", len(ps), "items!")
 }
 
 func (c *MemCache) gc(dur time.Duration) {
 	ticker := time.NewTicker(dur)
 	go func() {
 		for range ticker.C {
+			num := 0
 			now := time.Now().Unix()
 			// 回收域名计数
 			c.domainLimit.l.Lock()
 			for k, v := range c.domainLimit.list {
 				if now-v.last > 60*30 {
 					delete(c.domainLimit.list, k)
+					num++
 				} else {
 					for k1, v1 := range v.domains {
 						if now-v1 > 60*30 {
 							delete(v.domains, k1)
+							num++
 						}
 					}
 					if len(v.domains) == 0 {
 						delete(c.domainLimit.list, k)
+						num++
 					}
 				}
 			}
@@ -156,6 +159,7 @@ func (c *MemCache) gc(dur time.Duration) {
 			for k, v := range c.ips.list {
 				if v.lastActive != now {
 					delete(c.ips.list, k)
+					num++
 				}
 			}
 			c.ips.l.Unlock()
@@ -170,9 +174,11 @@ func (c *MemCache) gc(dur time.Duration) {
 				}
 				if len(v) == 0 {
 					delete(c.domains.dl, k)
+					num++
 				}
 			}
 			c.domains.l.Unlock()
+			fmt.Println("[PIAB]", "cache GC", "[🚮]", "clean", num, "items.")
 		}
 	}()
 }
@@ -205,10 +211,9 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 				pl = append(pl[:i], pl[i+1:]...)
 			}
 		}
+	} else {
+		c.domains.dl[domain] = make([]*proxyEntry, 0)
 	}
-
-	c.domains.dl[domain] = make([]*proxyEntry, 0)
-
 	for i := 0; i < length; i++ {
 		// 检出 3s 内未使用的代理
 		if _, has := candidate[c.proxies.pl[i].p.IP]; !has {
@@ -220,6 +225,8 @@ func (c *MemCache) PickProxy(req *http.Request) (string, error) {
 			})
 			//代理使用次数+1
 			c.proxies.pl[i].n++
+
+			fmt.Println("[PIAB]", "proxy scheduling", "[✅]", req.Host, "-->", c.proxies.pl[i].p.URI())
 
 			return c.proxies.pl[i].p.URI(), nil
 		}
@@ -315,7 +322,8 @@ func (c *MemCache) DeleteProxy(p proxyinabox.Proxy) {
 			c.proxies.pl = append(c.proxies.pl[:i], c.proxies.pl[i+1:]...)
 		}
 	}
-	proxyinabox.DB.Delete(&p)
+	//hard delete
+	proxyinabox.DB.Unscoped().Delete(&p)
 }
 
 func getIP(str string) string {
