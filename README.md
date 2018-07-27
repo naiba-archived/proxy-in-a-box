@@ -9,9 +9,10 @@ Usage:
   proxy-in-a-box [flags]
 
 Flags:
-  -p, --ha string   http proxy server addr (default "127.0.0.1:8080")
-  -h, --help        help for proxy-in-a-box
-  -s, --sa string   https proxy server addr (default "127.0.0.1:8081")
+  -c, --conf string   config file (default "./pb.yaml")
+  -p, --ha string     http proxy server addr (default "127.0.0.1:8080")
+  -h, --help          help for proxy-in-a-box
+  -s, --sa string     https proxy server addr (default "127.0.0.1:8081")
 ```
 
 ## Usage
