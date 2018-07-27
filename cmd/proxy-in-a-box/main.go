@@ -26,6 +26,15 @@ var rootCmd = &cobra.Command{
 	Short: "Proxy-in-a-Box provide many proxies.",
 	Long:  `Proxy-in-a-Box helps programmers quickly and easily develop powerful crawler services. one-script, easy-to-use: proxies in a box.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		proxyinabox.Init()
+		fmt.Println("[PIAB]", "main", "[😁]", proxyinabox.Config.Sys.Name, "v1.0.0")
+		proxyinabox.CI = service.NewMemCache()
+
+		crawler.Init()
+
+		m = newMITM()
+		m.Init()
+
 		crawler.FetchProxies()
 		crawler.Verify()
 
@@ -38,26 +47,19 @@ var rootCmd = &cobra.Command{
 
 		select {}
 	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		//read config
+		viper.SetConfigType("yaml")
+		viper.SetConfigFile(configFilePath)
+		com.PanicIfNotNil(viper.ReadInConfig())
+		com.PanicIfNotNil(viper.Unmarshal(&proxyinabox.Config))
+	},
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&configFilePath, "conf", "c", "./pb.yaml", "config file")
 	rootCmd.PersistentFlags().StringVarP(&httpProxyAddr, "ha", "p", "127.0.0.1:8080", "http proxy server addr")
 	rootCmd.PersistentFlags().StringVarP(&httpsProxyAddr, "sa", "s", "127.0.0.1:8081", "https proxy server addr")
-	//read config
-	viper.SetConfigType("yaml")
-	viper.SetConfigFile(configFilePath)
-	com.PanicIfNotNil(viper.ReadInConfig())
-	com.PanicIfNotNil(viper.Unmarshal(&proxyinabox.Config))
-
-	proxyinabox.Init()
-	fmt.Println("[PIAB]", "main", "[😁]", proxyinabox.Config.Sys.Name, "v1.0.0")
-	proxyinabox.CI = service.NewMemCache()
-
-	crawler.Init()
-
-	m = newMITM()
-	m.Init()
 }
 
 func main() {
