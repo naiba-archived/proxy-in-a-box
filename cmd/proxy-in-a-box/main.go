@@ -35,10 +35,10 @@ var rootCmd = &cobra.Command{
 		m = newMITM()
 		m.Init()
 
+		m.ServeHTTP()
+
 		crawler.FetchProxies()
 		crawler.Verify()
-
-		m.ServeHTTP()
 
 		c := cron.New()
 		c.AddFunc("@daily", crawler.FetchProxies)
@@ -83,8 +83,9 @@ func newMITM() *mitm.MITM {
 		Scheduler: proxyinabox.CI.PickProxy,
 		Filter: func(req *http.Request) error {
 			if req.Header.Get("Naiba") != "lifelonglearning" {
-				return fmt.Errorf("%s", "NAIVE")
+				return fmt.Errorf("%s", "Proxy Authentication Required")
 			}
+			req.Header.Del("Naiba")
 			if !proxyinabox.CI.IPLimiter(req) {
 				return fmt.Errorf("%s", "请求次数过快")
 			}
