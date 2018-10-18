@@ -1,7 +1,6 @@
 package mitm
 
 import (
-	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -19,7 +18,7 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	var err error
 	defer func() {
 		if err != nil {
-			clientResponse.WriteHeader(http.StatusBadRequest)
+			clientResponse.WriteHeader(http.StatusBadGateway)
 			clientResponse.Write([]byte(err.Error()))
 		}
 	}()
@@ -70,6 +69,9 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	}
 	// set response header
 	for k, v := range remoteResponse.Header {
+		if k == "Content-Encoding" {
+			continue
+		}
 		var vb []byte
 		for i := 0; i < len(v); i++ {
 			if i == len(v)-1 {
@@ -82,8 +84,30 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	}
 	// write response code
 	clientResponse.WriteHeader(remoteResponse.StatusCode)
+	// decompress gzip page
+	body := make([]byte, 0)
+	switch remoteResponse.Header.Get("Content-Encoding") {
+	case "gzip":
+		reader, _ := gzip.NewReader(remoteResponse.Body)
+		var n int
+		for {
+			buf := make([]byte, 1024)
+			n, err = reader.Read(buf)
+
+			if err != nil && err != io.EOF {
+				fmt.Println("[MITM]", "decompress gzip", "[❎]", err)
+				break
+			}
+
+			if n == 0 {
+				break
+			}
+			body = append(body, buf...)
+		}
+	default:
+		body, err = ioutil.ReadAll(remoteResponse.Body)
+	}
 	// write response body
-	body, err := ioutil.ReadAll(remoteResponse.Body)
 	if err != nil {
 		fmt.Println("[MITM]", "read body", "[❎]", err)
 		return
@@ -97,27 +121,7 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	if m.Print {
 		fmt.Println("[MITM]", "REQUEST-DUMP", "[📮]", string(clientRequestDump))
 		fmt.Println("[MITM]", "RESPONSE-DUMP", "[📮]", string(remoteResponseDump))
-		// decompress gzip page
-		switch remoteResponse.Header.Get("Content-Encoding") {
-		case "gzip":
-			reader, _ := gzip.NewReader(bytes.NewReader([]byte(body)))
-			body = make([]byte, 0)
-			for {
-				buf := make([]byte, 1024)
-				n, err := reader.Read(buf)
 
-				if err != nil && err != io.EOF {
-					fmt.Println("[MITM]", "decompress gzip", "[❎]", err)
-					break
-				}
-
-				if n == 0 {
-					break
-				}
-				body = append(body, buf...)
-			}
-			fmt.Println("[MITM]", "RESPONSE-DUMP-GZIP", "[📮]", string(body))
-		}
 	}
 	<-ch
 }

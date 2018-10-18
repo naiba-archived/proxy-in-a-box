@@ -1,10 +1,8 @@
 package main
 
 import (
-	"compress/gzip"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -68,31 +66,10 @@ func testHTTPGet(msg, url string, c *http.Client) {
 	}
 	var body []byte
 	defer resp.Body.Close()
-	// decompress gzip page
-	switch resp.Header.Get("Content-Encoding") {
-	case "gzip":
-		reader, _ := gzip.NewReader(resp.Body)
-		body = make([]byte, 0)
-		for {
-			buf := make([]byte, 1024)
-			n, err := reader.Read(buf)
-
-			if err != nil && err != io.EOF {
-				fmt.Println("[proxy-in-a-box Example]", "decompress gzip", "[❎]", err)
-				break
-			}
-
-			if n == 0 {
-				break
-			}
-			body = append(body, buf[0:n]...)
-		}
-	default:
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Println("[proxy-in-a-box Example]", "ioutil.ReadAll", "[❎]", err)
-			return
-		}
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("[proxy-in-a-box Example]", "ioutil.ReadAll", "[❎]", err)
+		return
 	}
 	fmt.Println("[Example]", msg, "[📮]", resp.StatusCode, resp.Header, len(body))
 }
