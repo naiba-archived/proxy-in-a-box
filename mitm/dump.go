@@ -16,12 +16,14 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 	var remoteResponseDump []byte
 	var remoteResponse *http.Response
 	var err error
+
 	defer func() {
 		if err != nil {
 			clientResponse.WriteHeader(http.StatusBadGateway)
 			clientResponse.Write([]byte(err.Error()))
 		}
 	}()
+
 	ch := make(chan bool)
 	go func() {
 		clientRequestDump, err = httputil.DumpRequestOut(clientRequest, true)
@@ -31,14 +33,62 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 		ch <- true
 	}()
 
+	remoteResponse, err = m.replayRequest(clientRequest)
+	if err != nil {
+		fmt.Println("[MITM]", "remoteResponse", "[❎]", err)
+		return
+	}
+
+	remoteResponseDump, err = httputil.DumpResponse(remoteResponse, true)
+	if err != nil {
+		fmt.Println("[MITM]", "respDump", "[❎]", err)
+		return
+	}
+
+	// copy response header
+	copyResponseHeader(remoteResponse, clientResponse)
+
+	// decompress gzip page
+	var body []byte
+	switch remoteResponse.Header.Get("Content-Encoding") {
+	case "gzip":
+		clientResponse.Header().Del("Content-Encoding")
+		body, err = gzipDecompression(remoteResponse.Body)
+	default:
+		body, err = ioutil.ReadAll(remoteResponse.Body)
+	}
+	if err != nil {
+		fmt.Println("[MITM]", "read body", "[❎]", err)
+		return
+	}
+
+	// write response code
+	clientResponse.WriteHeader(remoteResponse.StatusCode)
+	// write response body
+	_, err = clientResponse.Write(body)
+	if err != nil {
+		fmt.Println("[MITM]", "connIn write", "[❎]", err)
+		return
+	}
+	// show http dump
+	if m.Print {
+		fmt.Println("[MITM]", "REQUEST-DUMP", "[📮]", string(clientRequestDump))
+		fmt.Println("[MITM]", "RESPONSE-DUMP", "[📮]", string(remoteResponseDump))
+	}
+	<-ch
+}
+
+func (m *MITM) replayRequest(clientRequest *http.Request) (resp *http.Response, err error) {
 	transport := http.Transport{}
 	if !m.IsDirect {
-		proxy, err := m.Scheduler(clientRequest)
+		var proxy string
+		proxy, err = m.Scheduler(clientRequest)
 		if err != nil {
 			fmt.Println("[MITM]", "proxy scheduler", "[❎]", err)
 			return
 		}
-		p, err := url.Parse(proxy)
+		var p *url.URL
+		p, err = url.Parse(proxy)
 		if err != nil {
 			fmt.Println("[MITM]", "proxy parse", "[❎]", err)
 			return
@@ -56,22 +106,12 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 			return fmt.Errorf("")
 		},
 	}
-	remoteResponse, err = cli.Do(clientRequest)
-	if err != nil {
-		fmt.Println("[MITM]", "remoteResponse", "[❎]", err)
-		return
-	}
 
-	remoteResponseDump, err = httputil.DumpResponse(remoteResponse, true)
-	if err != nil {
-		fmt.Println("[MITM]", "respDump", "[❎]", err)
-		return
-	}
-	// set response header
-	for k, v := range remoteResponse.Header {
-		if k == "Content-Encoding" {
-			continue
-		}
+	return cli.Do(clientRequest)
+}
+
+func copyResponseHeader(r *http.Response, c http.ResponseWriter) {
+	for k, v := range r.Header {
 		var vb []byte
 		for i := 0; i < len(v); i++ {
 			if i == len(v)-1 {
@@ -80,48 +120,26 @@ func (m *MITM) Dump(clientResponse http.ResponseWriter, clientRequest *http.Requ
 				vb = append(vb, []byte(v[i]+"; ")...)
 			}
 		}
-		clientResponse.Header().Set(k, string(vb))
+		c.Header().Set(k, string(vb))
 	}
-	// write response code
-	clientResponse.WriteHeader(remoteResponse.StatusCode)
-	// decompress gzip page
+}
+
+func gzipDecompression(r io.Reader) ([]byte, error) {
 	body := make([]byte, 0)
-	switch remoteResponse.Header.Get("Content-Encoding") {
-	case "gzip":
-		reader, _ := gzip.NewReader(remoteResponse.Body)
-		var n int
-		for {
-			buf := make([]byte, 1024)
-			n, err = reader.Read(buf)
-
-			if err != nil && err != io.EOF {
-				fmt.Println("[MITM]", "decompress gzip", "[❎]", err)
-				break
-			}
-
-			if n == 0 {
-				break
-			}
-			body = append(body, buf...)
+	var err error
+	reader, _ := gzip.NewReader(r)
+	var n int
+	for {
+		buf := make([]byte, 1024)
+		n, err = reader.Read(buf)
+		if err != nil && err != io.EOF {
+			fmt.Println("[MITM]", "decompress gzip", "[❎]", err)
+			break
 		}
-	default:
-		body, err = ioutil.ReadAll(remoteResponse.Body)
+		if n == 0 {
+			break
+		}
+		body = append(body, buf...)
 	}
-	// write response body
-	if err != nil {
-		fmt.Println("[MITM]", "read body", "[❎]", err)
-		return
-	}
-	_, err = clientResponse.Write(body)
-	if err != nil {
-		fmt.Println("[MITM]", "connIn write", "[❎]", err)
-		return
-	}
-	// show http dump
-	if m.Print {
-		fmt.Println("[MITM]", "REQUEST-DUMP", "[📮]", string(clientRequestDump))
-		fmt.Println("[MITM]", "RESPONSE-DUMP", "[📮]", string(remoteResponseDump))
-
-	}
-	<-ch
+	return body, err
 }
